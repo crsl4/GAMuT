@@ -3,9 +3,9 @@ R"""
 source("all_gamut_functions.R")
 source("simulation-one.r")
 
-a = Y1
+
 b = UNR_OBS
-c = y2
+
 
 x = linear_GAMuT_geno(b)
 y = TestGAMuT(x$Lc,x$ev_Lc,x$Lc,x$ev_Lc)
