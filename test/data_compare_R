@@ -4,7 +4,7 @@ source("all_gamut_functions.R")
 source("simulation-one.r")
 
 
-b = UNR_OBS
+b = replicate(1, rnorm(5000))
 
 
 x = linear_GAMuT_geno(b)
