@@ -1,6 +1,6 @@
 using RCall
 R"""
-source("original_GAMuT.R")
+source("all_gamut_functions.R")
 """
 a = [1 2 3; 4 5 6]
 b = [4 9; 5 10; 8 11]
