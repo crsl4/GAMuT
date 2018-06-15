@@ -1,34 +1,38 @@
 using RCall
 R"""
-source("all_gamut_functions.R")
-source("simulation-one.r")
+source("src/all_gamut_functions.r")
+source("test/simulation-one-edited.r")
 
+a = UNR_OBS
 
-b = replicate(1, rnorm(5000))
-
-
-x = linear_GAMuT_geno(b)
+x = linear_GAMuT_geno(a)
 y = TestGAMuT(x$Lc,x$ev_Lc,x$Lc,x$ev_Lc)
 """
 @rget y 
-@rget b
+@rget x
 @rget a
-@rget c
 
-include("linear_GAMuT_geno.jl")
-include("proj_GAMuT_pheno.jl")
-include("test_GAMuT.jl")
-lc,ev_Lc = linear_GAMuT_geno(b)
+include("src/linear_GAMuT_geno.jl")
+include("src/proj_GAMuT_pheno.jl")
+include("src/test_GAMuT.jl")
+lc,ev_Lc = linear_GAMuT_geno(a)
 y2 = testGAMuT(lc,ev_Lc,lc,ev_Lc)
 
+all(isapprox.(x[:Lc],lc)) || error("julia and R functions do not match")
+all(isapprox.(x[:ev_Lc],ev_Lc)) || error("julia and R functions do not match")
 isapprox(y,y2) || error("julia and R functions do not match")
 
+
 R"""
+##Need square matrix
+b = replicate(500, rnorm(500))
+
 z = proj_GAMuT_pheno(b)
 w = TestGAMuT(z$Kc, z$ev_Kc, z$Kc, z$ev_Kc)
 """
-
+@rget b
 @rget w
+
 kc,ev_Kc = proj_GAMuT_pheno(b)
 w2 = testGAMuT(kc,ev_Kc,kc,ev_Kc)
 
