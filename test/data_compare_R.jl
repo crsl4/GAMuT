@@ -1,7 +1,7 @@
 using RCall
 R"""
 source("./src/all_gamut_functions.r")
-source("./test/simulation-one-edited.r")
+source("./src/simulation-one.r")
 
 
 x1 = linear_GAMuT_geno(Y1)
