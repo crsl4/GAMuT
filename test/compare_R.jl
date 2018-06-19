@@ -1,6 +1,6 @@
 using RCall
 R"""
-source("../src/all_gamut_functions.R")
+source("src/all_gamut_functions.r")
 """
 a = [1 2 3; 4 5 6]
 b = [4 9; 5 10; 8 11]
@@ -14,9 +14,9 @@ y = TestGAMuT(x$Lc,x$ev_Lc,x$Lc,x$ev_Lc)
 @rget y 
 @rget x 
 
-include("linear_GAMuT_geno.jl")
-include("proj_GAMuT_pheno.jl")
-include("test_GAMuT.jl")
+include("src/linear_GAMuT_geno.jl")
+include("src/proj_GAMuT_pheno.jl")
+include("src/test_GAMuT.jl")
 lc,ev_Lc = linear_GAMuT_geno(d)
 y2 = testGAMuT(lc,ev_Lc,lc,ev_Lc)
 
