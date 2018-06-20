@@ -1,8 +1,10 @@
 using RCall
+##------------------------------------------------------------------------------
+## Linear Kernel: 
+##------------------------------------------------------------------------------
 R"""
 source("./src/all_gamut_functions.r")
 source("./src/simulation-one.r")
-
 
 x1 = linear_GAMuT_geno(Y1)
 x2 = linear_GAMuT_geno(Y2)
@@ -17,6 +19,7 @@ y = TestGAMuT(x1$Lc,x1$ev_Lc,x2$Lc,x2$ev_Lc)
 include("./src/linear_GAMuT_geno.jl")
 include("./src/proj_GAMuT_pheno.jl")
 include("./src/test_GAMuT.jl")
+
 lc,ev_Lc = linear_GAMuT_geno(Y1)
 lc_2,ev_Lc_2 = linear_GAMuT_geno(Y2)
 y2 = testGAMuT(lc,ev_Lc,lc_2,ev_Lc_2)
@@ -27,7 +30,9 @@ all(isapprox.(x2[:Lc],lc_2)) || error("julia and R functions do not match")
 all(isapprox.(x2[:ev_Lc],ev_Lc_2)) || error("julia and R functions do not match")
 isapprox(y,y2) || error("julia and R functions do not match")
 
-
+##------------------------------------------------------------------------------
+## Projection Kernel: 
+##------------------------------------------------------------------------------
 R"""
 z1 = proj_GAMuT_pheno(Y1)
 z2 = proj_GAMuT_pheno(Y1)

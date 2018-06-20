@@ -13,8 +13,7 @@ function testGAMuT(yc, λy, xc, λx )
     scoredavies = [gamut*m^2]
     @rput zsort
     @rput scoredavies 
-    zsortnum = R"as.numeric(unlist(zsort))"
-    @rput zsortnum
+    R"zsortnum = as.numeric(unlist(zsort))"
     R"results_score = davies(scoredavies, zsortnum)"
     @rget results_score
     davies_pvalue = results_score[:Qq]
