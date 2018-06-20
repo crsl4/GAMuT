@@ -5,6 +5,10 @@ using RCall
 R"""
 source("./src/all_gamut_functions.r")
 source("./src/simulation-one.r")
+<<<<<<< HEAD
+=======
+
+>>>>>>> d9176e872dcd8652dd42919764feea896c1fd78d
 
 x1 = linear_GAMuT_geno(Y1)
 x2 = linear_GAMuT_geno(Y2)
