@@ -8,7 +8,8 @@ function testGAMuT(yc, λy, xc, λx )
 
     #Derive p-value of GAMuT statistic
     #Form vector of eigenvalue products 
-    z = vec(A_mul_Bt([λy], [λx]))
+    z = A_mul_Bt(λy, λx)
+    #https://stackoverflow.com/questions/50822442/how-to-sort-a-matrix-in-julia
     zsort = [sort(collect(Iterators.flatten(z)), rev=true)]
     scoredavies = [gamut*m^2]
     @rput zsort

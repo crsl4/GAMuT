@@ -10,7 +10,7 @@ nassoc1 = 1
 nassoc2 = 1 
 npheno1 = 1 
 npheno2 = 1 
-n_unrelated = 100 
+n_unrelated = 5000 
 n_variants = 500
 causal_var = 0.01
 test.approach = 1 
@@ -60,7 +60,7 @@ blockMatrixDiagonal<-function(...){
     if(is.list(matrixList[[1]])) matrixList<-matrixList[[1]]
 
     dimensions<-sapply(matrixList,FUN=function(x) dim(x)[1])
-    finalDimension<-sum(dimensions)
+    finalDimension<-sum(dimensions)ƒ
     finalMatrix<-matrix(0,nrow=finalDimension,ncol=finalDimension)
     index<-1
     for(k in 1:length(dimensions)){
@@ -354,6 +354,3 @@ if(maf > 0.05){
 out2 = simulatePhenotypesMediation(npheno1, npheno2,traitcor, nassoc1, nassoc2, causal.ind, MAF_unr, n_unrelated, variant, UNR_OBS,approach=sim.approach, ignoreZ=ignoreZ)
 Y1 = out2$Y1
 Y2 = out2$Y2
-
-X = UNR_OBS
-Y = cbind(Y1,Y2)
