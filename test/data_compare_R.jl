@@ -35,11 +35,11 @@ y2 = testGAMuT(lc,ev_Lc,lc_2,ev_Lc_2)
 
 ##Test
 @testset "Linear Kernel" begin
-    @test x1[:Lc] == lc
-    @test x1[:ev_Lc] ≈ ev_Lc[1]
-    @test x2[:Lc] == lc_2
-    @test x2[:ev_Lc] ≈ ev_Lc_2[1]
-    @test y == y2
+    @test x1[:Lc] ≈  lc
+    @test x1[:ev_Lc] ≈ ev_Lc
+    @test x2[:Lc] ≈ lc_2
+    @test x2[:ev_Lc] ≈ ev_Lc_2
+    @test y ≈ y2
 end 
 
 ##------------------------------------------------------------------------------
@@ -50,8 +50,7 @@ z1 = proj_GAMuT_pheno(Y1)
 z2 = proj_GAMuT_pheno(Y2)
 w = TestGAMuT(z1$Kc, z1$ev_Kc, z2$Kc, z2$ev_Kc)
 """
-##@rget Y1
-##@rget Y2
+
 @rget z1
 @rget z2
 @rget w
@@ -66,5 +65,5 @@ w2 = testGAMuT(kc,ev_Kc,kc_2,ev_Kc_2)
     @test z1[:ev_Kc] ≈ ev_Kc[1]
     @test z2[:Kc] ≈ kc_2
     @test z2[:ev_Kc] ≈ ev_Kc_2[1]
-    @test w == w2
+    @test w ≈ w2
 end 

@@ -1,11 +1,13 @@
 numtrios = 500
 maf = 0.25
+using Distributions
+using StatsBase
 
-function minorAlleleCountsBinomial(numtrios, MAF)
-    mom1bin = Binomial(1, MAF)
+function minorAlleleCountsBinomial(numtrios, maf)
+    mom1bin = Binomial(1, maf)
     mom1 = rand(mom1bin, numtrios)
     mom1[mom1 .== 0] = 2 
-    mom2bin = Binomial(1, MAF)
+    mom2bin = Binomial(1, maf)
     mom2 = rand(mom2bin, numtrios)
     mom2[mom2 .== 0] = 2
     
@@ -34,5 +36,5 @@ function minorAlleleCountsBinomial(numtrios, MAF)
     eur_mom = (eur[:, 1] .== 1) + (eur[:, 1] .== 1)
     eur_dad = (eur[:, 3] .== 1) + (eur[:, 4] .== 1)
 
-    return(G_kid=eur_kid, G_mom=eur_mom, G_dad=eur_dad)
+    return(eur_kid, eur_mom, eur_dad)
 end

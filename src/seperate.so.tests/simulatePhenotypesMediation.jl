@@ -3,21 +3,12 @@ using Rmath
 using Distributions
 using MultivariateStats
 using GLM
-##------------------------------------------------------------------------------
-## Variables:  
-##------------------------------------------------------------------------------
-maf = 0.25 
-traitcor = "med"
-nassoc1 = 1 
-nassoc2 = 1 
-npheno1 = 1 
-npheno2 = 1 
-n_unrelated = 5000 
-n_variants = 500
-causal_var = 0.01
-test_approach = 1 
-sim_approach = 3 
-ignoreZ = true
+
+include("./src/seperate.so.tests/variables.jl")
+include("./src/seperate.so.tests/simulatePhenotypes.jl")
+include("./src/seperate.so.tests/splitPhenotypeMatrix.jl")
+include("./src/seperate.so.tests/simulateFullyMediatedPhenotype.jl")
+include("./src/seperate.so.tests/simulatePartiallyMediatedPhenotype.jl")
 
 function simulatePhenotypesMediation(npheno1, npheno2,traitcor, nassoc1, nassoc2, causal_ind, MAF_unr, n_unrelated, variant,UNR_OBS, approach=1, numpcs=1, ignoreZ=false) 
     if approach == 1

@@ -8,6 +8,7 @@ function blockMatrixAntiDiagonal(M,n)
         error("Error: dimension of matrix M should be a multiple of n")
     end
     numI = ntotal / n
+    #https://stackoverflow.com/questions/26042691/declaring-multiple-arrays-in-julia
     matrixList = [Array{Int64}(n, n) for i = 1:numI]
     for i in range(1, convert(Int64, numI))
         matrixList[i] = eye(n)

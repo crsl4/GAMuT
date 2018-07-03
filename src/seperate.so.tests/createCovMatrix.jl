@@ -40,25 +40,6 @@ function createCovMatrix(npheno, traitcor)
             #Lhttps://stackoverflow.com/questions/51068263/lower-triangular-matrix-equal-to-value-in-julia
             mat[tril!(trues(size(mat)), -1)] = cor
             mat = mat + mat' + eye(npheno)
-        else
-            if traitcor == "block"
-                m = npheno/2
-                cor1 = rand(Uniform(phencor_ll,phencor_ul), size(m*(m-1)/2,1), 1)
-                mat1 = zeros(m, m)
-                cor1 = mat1[tril!(trues(size(mat1)), -1)] = cor1
-                mat1 = mat1 + mat1' + eye(m)
-                cor2 = rand(Uniform(phencor_ll,phencor_ul), size(m*(m-1)/2,1), 1)
-                mat2 = [0, m,m]
-                cor2 = mat2[tril!(trues(size(mat2)), -1)] = cor2
-                mat2 = mat2 + mat2' + eye(m)
-                mat = blockMatrixDiagonal(mat1, mat2)
-            else
-                cor = rand(Uniform(phencor_ll,phencor_ul), size(npheno*(npheno-1)/2), 1)
-                mat1 = [0, npheno, npheno]
-                cor = mat1[tril!(trues(size(mat1)), -1)] = cor
-                mat1 = mat1 + mat1' + eye(npheno)
-                mat = blockMatrixAntiDiagonal(mat1,npheno/2)
-            end
         end
     end
     return(mat)

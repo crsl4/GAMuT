@@ -1,18 +1,4 @@
-##------------------------------------------------------------------------------
-## Variables:  
-##------------------------------------------------------------------------------
-maf = 0.25 
-traitcor = "med"
-nassoc1 = 1 
-nassoc2 = 1 
-npheno1 = 1 
-npheno2 = 1 
-n_unrelated = 5000 
-n_variants = 500
-causal_var = 0.01
-test_approach = 1 
-sim_approach = 3 
-ignoreZ = true
+include("./src/seperate.so.tests/variables.jl")
 
 ## Get Y1 and Y2 from phenotype matrix
 function splitPhenotypeMatrix(P,nassoc1,nassoc2, npheno1,npheno2)
@@ -40,4 +26,3 @@ function splitPhenotypeMatrix(P,nassoc1,nassoc2, npheno1,npheno2)
     return([Y1=Y1,Y2=Y2])
 end
 
-splitPhenotypeMatrix(e,1,1,4,2)

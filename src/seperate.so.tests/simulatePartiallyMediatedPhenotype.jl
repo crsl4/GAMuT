@@ -3,21 +3,9 @@ using Rmath
 using Distributions
 using MultivariateStats
 using GLM
-##------------------------------------------------------------------------------
-## Variables:  
-##------------------------------------------------------------------------------
-maf = 0.25 
-traitcor = "med"
-nassoc1 = 1 
-nassoc2 = 1 
-npheno1 = 1 
-npheno2 = 1 
-n_unrelated = 5000 
-n_variants = 500
-causal_var = 0.01
-test_approach = 1 
-sim_approach = 3 
-ignoreZ = true
+
+include("./src/seperate.so.tests/variables.jl")
+include("./src/seperate.so.tests/parameters4phenotypeSimulation.jl")
 
 function simulatePartiallyMediatedPhenotype(Y2,npheno1,n_unrelated, traitcor,causal_ind,nassoc1,variant,MAF_unr,UNR_OBS)
     ## Creating parameters to simulate phenotype
