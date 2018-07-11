@@ -13,17 +13,20 @@ function simulatePartiallyMediatedPhenotype(Y2,npheno1,n_unrelated, traitcor,cau
     betamat_unr = out2[1]
     cov_unr = out2[2]
     ## Actual phenotype simulation:
-    Y1 = zeros(npheno1*n_unrelated, npheno1)
+    Y1 = zeros(n_unrelated, npheno1)
     for i in 1:n_unrelated
         if size(Y2, 2) <= npheno1
-            mu = fill(0, npheno1)
-            #for j in 1:size(Y2, 2)
-            mu = Y2[i, 1]
+            mu = zeros(npheno1)
+            for j in 1:size(Y2,2)
+                mu = Y2[i, j]
+            end  
         else
             #Works
             mu = Y2[i, 1:npheno1]
         end
-        Y1[i,:] = rand(MvNormal(mod.(betamat_unr, UNR_OBS[i,causal_ind]+mu), cov_unr),1)
+        mu0 = betamat_unr * UNR_OBS[i,causal_ind]'
+        mu0 = vcat(mu0...)
+        Y1[i,:] = rand(MvNormal( mu0 + mu, cov_unr),1)
     end
     return(Y1)
 end

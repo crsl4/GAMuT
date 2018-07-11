@@ -9,11 +9,15 @@ function simulatePhenotypes(npheno, traitcor, causal_ind, nassoc, variant, MAF_u
     betamat_unr = out2[1]
     cov_unr = out2[2]
     ## Actual phenotype simulation:
-    P0_UNR = [convert(Int64, n_unrelated*npheno), npheno]
+    ##P0_UNR = [convert(Int64, n_unrelated*npheno), npheno]
+    P0_UNR = zeros(n_unrelated,npheno)
     for i in 1:n_unrelated
-        for x in size(causal_ind,2)
-        P0_UNR[i,:] = rand(MvNormal(mod(betamat_unr, G[i,causal_ind[x]]), cov_unr),1)
-        end
+        ##for x in size(causal_ind,2)
+        ##P0_UNR[i,:] = rand(MvNormal(betamat_unr * G[i,causal_ind[x]], cov_unr),1)
+        mu = betamat_unr * G[i,causal_ind]'
+        mu = vcat(mu...) ## splat converts array to iterable
+        P0_UNR[i,:] = rand(MvNormal(mu, cov_unr),1)
+        ##end
     return(P0_UNR)
     end
 end

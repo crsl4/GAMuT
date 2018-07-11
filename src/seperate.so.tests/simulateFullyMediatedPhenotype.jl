@@ -8,7 +8,7 @@ function simulateFullyMediatedPhenotype(Y2,npheno1,n_unrelated,traitcor)
     cov = createCovMatrix(npheno1, traitcor)
     for i in 1:n_unrelated
         if size(Y2, 2) <= npheno1
-            mu = zeros(Int64, npheno1)
+            mu = zeros(npheno1)
             for j in 1:size(Y2, 2)
                 mu[j] = Y2[i,j]
             end

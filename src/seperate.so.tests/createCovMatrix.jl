@@ -35,7 +35,7 @@ function createCovMatrix(npheno, traitcor)
         mat = rand(Uniform(phencor_ll,phencor_ul),1,1)
     else
         if traitcor != "block" && traitcor != "antiblock"
-            cor = rand(Uniform(phencor_ll,phencor_ul), size(npheno*(npheno-1)/2,1), 1)
+            cor = rand(Uniform(phencor_ll,phencor_ul), Int(npheno*(npheno-1)/2))
             mat = zeros(npheno, npheno)
             #Lhttps://stackoverflow.com/questions/51068263/lower-triangular-matrix-equal-to-value-in-julia
             mat[tril!(trues(size(mat)), -1)] = cor
