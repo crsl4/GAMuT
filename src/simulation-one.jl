@@ -21,22 +21,21 @@ srand(1234)
 ##------------------------------------------------------------------------------
 ## Preliminary Functions: 
 ##------------------------------------------------------------------------------
-function minorAlleleCountsBinomial(numtrios, MAF)
-    mom1bin = Binomial(1, MAF)
+function minorAlleleCountsBinomial(numtrios, maf)
+    mom1bin = Binomial(1, maf)
     mom1 = rand(mom1bin, numtrios)
-    foreach(x -> mom1[x] == 0  && (mom1[x] = 2), eachindex(mom1))
-    
-    mom2bin = Binomial(1, MAF)
+    mom1[mom1 .== 0] = 2 
+    mom2bin = Binomial(1, maf)
     mom2 = rand(mom2bin, numtrios)
-    foreach(x -> mom2[x] == 0  && (mom2[x] = 2), eachindex(mom2))
+    mom2[mom2 .== 0] = 2
     
     dad1bin = Binomial(1, maf)
     dad1 = rand(dad1bin, numtrios)
-    foreach(x -> dad1[x] == 0  && (dad1[x] = 2), eachindex(dad1))
+    dad1[dad1 .== 0] = 2
     
     dad2bin = Binomial(1, maf)
     dad2 = rand(dad2bin, numtrios)
-    foreach(x -> dad2[x] == 0  && (dad2[x] = 2), eachindex(dad2))
+    dad2[dad2 .== 0] = 2
     
     eur = collect(hcat(mom1,mom2,dad1,dad2))
     
@@ -55,7 +54,7 @@ function minorAlleleCountsBinomial(numtrios, MAF)
     eur_mom = (eur[:, 1] .== 1) + (eur[:, 1] .== 1)
     eur_dad = (eur[:, 3] .== 1) + (eur[:, 4] .== 1)
 
-    return(G_kid=eur_kid, G_mom=eur_mom, G_dad=eur_dad)
+    return(eur_kid, eur_mom, eur_dad)
 end
 
 # builds a block matrix whose diagonals are the square matrices provided.
@@ -70,43 +69,39 @@ function blockMatrixDiagonal(...)
     matrixList = [...]
     if matrixList[[1]] == [...]
         matrixList = matrixList[[1]]
-        dimensions = [size(matrixList,1),size(matrixList,2)]
+        dimensions = [size(matrixList,1) ]
         finalDimension = sum(dimensions)
         finalMatrix = zeros(Int64, finalDimension, finalDimension)
         index = 1
-
-##------------------------------------------------------------------------------
-## Convert: 
-##------------------------------------------------------------------------------
         for k in 1:length(dimensions)
-            finalMatrix[index:(index+dimensions[k]-1),index:(index+dimensions[k]-1)] = matrixList[[k]]
+            finalMatrix[(index:(index+dimensions[k]-1),index:(index+dimensions[k]-1))] = matrixList[k]
             index=index+dimensions[k]
         end
+        return(finalMatrix)
     end
-    return(finalMatrix)
 end
 
 ## input only one matrix (and size of block) that will have the block diagonal
 ## replaced by identities
 function blockMatrixAntiDiagonal(M,n)
-    ntotal = size(M)[1]
+    ntotal = size(M,1)
     if mod(ntotal, n) != 0
         error("Error: dimension of matrix M should be a multiple of n")
     end
     numI = ntotal / n
-    matrixList = ["list", numI]
+    #https://stackoverflow.com/questions/26042691/declaring-multiple-arrays-in-julia
+    matrixList = [Array{Int64}(n, n) for i = 1:numI]
     for i in range(1, convert(Int64, numI))
         matrixList[i] = eye(n)
     end
-##------------------------------------------------------------------------------
-## Convert: 
-##------------------------------------------------------------------------------
-dimensions = [size(matrixList,1), size(matrixList,1)]
+
+dimensions = [size(matrixList[i],1) for i = 1:convert(Int64, numI)]
 index = 1
     for k in range(1, length(dimensions))
-        M[index:(index+dimensions[k]-1),index:(index+dimensions[k]-1)] = matrixList[[k]]
+        M[index:(index+dimensions[k]-1),index:(index+dimensions[k]-1)] = matrixList[k]
         index = index + dimensions[k]
     end
+    return(M)
 end
 
 
@@ -123,7 +118,7 @@ function createCovMatrix(npheno, traitcor)
     end
     if traitcor == "none"
         phencor_ll = 0
-        phencor_ul = 0
+        phencor_ul = 1e-12
     elseif traitcor == "low"
         phencor_ll = 0
         phencor_ul = 0.3
@@ -144,37 +139,20 @@ function createCovMatrix(npheno, traitcor)
     else
         if traitcor != "block" && traitcor != "antiblock"
             cor = rand(Uniform(phencor_ll,phencor_ul), size(npheno*(npheno-1)/2,1), 1)
-            mat = [0, npheno, npheno]
-            #LowerTriangular no option for diag
-            cor = LowerTriangular(mat)
+            mat = zeros(npheno, npheno)
+            #Lhttps://stackoverflow.com/questions/51068263/lower-triangular-matrix-equal-to-value-in-julia
+            mat[tril!(trues(size(mat)), -1)] = cor
             mat = mat + mat' + eye(npheno)
-        else
-            if traitcor == "block"
-                m = npheno/2
-                cor1 = rand(Uniform(phencor_ll,phencor_ul), size(m*(m-1)/2,1), 1)
-                mat1 = zeros(AbstractFloat, m, m)
-                cor1 = LowerTriangular(mat1)
-                mat1 = mat1 + mat1' + eye(m)
-                cor2 = rand(Uniform(phencor_ll,phencor_ul), size(m*(m-1)/2,1), 1)
-                mat2 = [0, m,m]
-                cor2 = LowerTriangular(mat2)
-                mat2 = mat2 + mat2' + eye(m)
-                mat = blockMatrixDiagonal(mat1, mat2)
-            else
-                cor = rand(Uniform(phencor_ll,phencor_ul), size(npheno*(npheno-1)/2), 1)
-                mat1 = [0, npheno, npheno]
-                cor = LowerTriangular(mat1)
-                mat1 = mat1 + mat1' + eye(npheno)
-                mat = blockMatrixAntiDiagonal(mat1,npheno/2)
-            end
         end
     end
     return(mat)
 end
 
 
+
 ## function to set up the parameters to simulate the phenotypes associated with genotypes
 ## it returns the beta matrix and the covariance matrix
+using Rmath
 function parameters4phenotypeSimulation(npheno, traitcor, causal_ind, nassoc, variant, MAF_unr)
     if npheno < nassoc
         error("Error: npheno<nassoc")
@@ -185,18 +163,20 @@ function parameters4phenotypeSimulation(npheno, traitcor, causal_ind, nassoc, va
     ## beta matrix: npheno by num of causal variants
     betamat_unr = zeros(npheno, length(causal_ind))
     if nassoc > 0
-        hvec_unr = repeat(0.0, outer = nassoc)
+        hvec_unr = fill(0.0, nassoc)
         for i in 1:nassoc
             if (variant=="rare")
-                betamat_unr[i,] = (0.4 + rnorm(length(causal_ind), 0, 0.1))*abs(log(MAF_C_unr, base=10))
+                betamat_unr[i,:] = (0.4 + rnorm(length(causal_ind), 0, 0.1))*abs(log10.(MAF_C_unr))
             elseif (variant=="common")
-                betamat_unr[i,] = repeat(log(1.5),outer = length(causal_ind))
-            hvec_unr[i] = sum(betamat_unr[i,]^2*2*MAF_C_unr*(1-MAF_C_unr))
+                betamat_unr[i,:] = fill(log(1.5), length(causal_ind))
             end
+            tmp = betamat_unr[i,:].^2
+            tmp2 = 2*MAF_C_unr.*(1-MAF_C_unr)
+            hvec_unr[i] = sum(tmp .* tmp2')
         end
 
             ## note: the first nassoc phenotypes are the ones that are associated with the genotype
-            for i in 1:nassoc 
+        for i in 1:nassoc 
             for ii in 1:nassoc
                 if i==ii
                     cov_unr[i,ii] = 1-hvec_unr[i]
@@ -208,13 +188,10 @@ function parameters4phenotypeSimulation(npheno, traitcor, causal_ind, nassoc, va
         end
     
         if !isposdef(cov_unr)
-##------------------------------------------------------------------------------
-## Convert: 
-##------------------------------------------------------------------------------
-            cov_unr <- make.positive.definite(cov_unr)
+            isposdef!(cov_unr) || error("cannot make positive definite")
         end
     end
-    return([betamat=betamat_unr, cov=cov_unr])
+    return(betamat_unr, cov_unr)
 end
 
 
@@ -252,8 +229,8 @@ function splitPhenotypeMatrix(P,nassoc1,nassoc2, npheno1,npheno2)
         Y1 = P[1:size(P, 1), 1:npheno1]
         Y2 = P[1:size(P, 1),(npheno1+1):m]
     else 
-        Y1 = P[1:size(P, 1),[(nassoc1+nassoc2+1):(nassoc1+nassoc2+(npheno1-nassoc1))]]
-        Y2 = P[1:size(P, 1),[(nassoc1+1):(nassoc1+nassoc2),(nassoc1+nassoc2+npheno1-nassoc1+1):m]]
+        Y1 = P[:, vcat(1:nassoc1,(nassoc1+nassoc2+1):(nassoc1+nassoc2+(npheno1-nassoc1)))]
+        Y2 = P[:, vcat((nassoc1+1):(nassoc1+nassoc2),(nassoc1+nassoc2+npheno1-nassoc1+1):m)]
     end
     return([Y1=Y1,Y2=Y2])
 end

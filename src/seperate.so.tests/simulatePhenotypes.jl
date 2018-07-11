@@ -11,9 +11,19 @@ function simulatePhenotypes(npheno, traitcor, causal_ind, nassoc, variant, MAF_u
     ## Actual phenotype simulation:
     P0_UNR = [convert(Int64, n_unrelated*npheno), npheno]
     for i in 1:n_unrelated
-        P0_UNR[i,:] = rand(MvNormal(mod(betamat_unr, G[i,causal_ind]), cov_unr),1)
+        for x in size(causal_ind,2)
+        P0_UNR[i,:] = rand(MvNormal(mod(betamat_unr, G[i,causal_ind[x]]), cov_unr),1)
+        end
     return(P0_UNR)
     end
 end
 
-simulatePhenotypes(2, "low", causal_ind, 1, "rare", MAF_unr, 100, rand(6, 6))
+simulatePhenotypes(npheno, traitcor, causal_ind, nassoc, variant, MAF_unr, n_unrelated, rand(100,2))
+
+
+
+
+
+
+##What is G? currently is a 100 X 2
+##ERROR: BoundsError: attempt to access 100×2 Array{Float64,2} at index [1, 261]

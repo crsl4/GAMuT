@@ -10,20 +10,26 @@ include("./src/seperate.so.tests/parameters4phenotypeSimulation.jl")
 function simulatePartiallyMediatedPhenotype(Y2,npheno1,n_unrelated, traitcor,causal_ind,nassoc1,variant,MAF_unr,UNR_OBS)
     ## Creating parameters to simulate phenotype
     out2 = parameters4phenotypeSimulation(npheno1, traitcor, causal_ind, nassoc1, variant, MAF_unr)
-    betamat_unr = out2[:betamat]
-    cov_unr = out2[:cov]
+    betamat_unr = out2[1]
+    cov_unr = out2[2]
     ## Actual phenotype simulation:
     Y1 = zeros(npheno1*n_unrelated, npheno1)
     for i in 1:n_unrelated
         if size(Y2, 2) <= npheno1
-            mu = repeat(0, outer=npheno1)
-            for j in 1:size(Y2, 2)
-                mu[j] = Y2[i, j]
-            end
+            mu = fill(0, npheno1)
+            #for j in 1:size(Y2, 2)
+            mu = Y2[i, 1]
         else
+            #Works
             mu = Y2[i, 1:npheno1]
         end
-        Y1[i,] = MvNormal(mod(betamat_unr, UNR_OBS[i,causal_ind]+mu), cov_unr)
+        Y1[i,:] = rand(MvNormal(mod.(betamat_unr, UNR_OBS[i,causal_ind]+mu), cov_unr),1)
     end
     return(Y1)
 end
+
+simulatePartiallyMediatedPhenotype(Y2, 3, n_unrelated, traitcor, causal_ind, nassoc1, variant, MAF_unr, UNR_OBS)
+##ERROR: DimensionMismatch("tried to assign 1 elements to 3 destinations") line 21
+
+simulatePartiallyMediatedPhenotype(Y2, 2, n_unrelated, traitcor, causal_ind, nassoc1, variant, MAF_unr, UNR_OBS)
+##ERROR: MethodError: no method matching Distributions.MvNormal(::Array{Float64,2}, ::Array{Float64,2})

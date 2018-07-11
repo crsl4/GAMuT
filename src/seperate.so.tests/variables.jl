@@ -18,17 +18,21 @@ npheno = npheno1 + npheno2
 nassoc = nassoc1
 variant = "common"
 
-#UNR_OBS = fill(NaN, 100, 500*100)
-#for i in 1:n_variants
-    #out = minorAlleleCountsBinomial(n_unrelated, maf)
-    #UNR_OBS[:i] = [out[:eur_mom]]
-#end
+UNR_OBS = fill(NaN, 100, 500)
+for i in 1:n_variants
+    out = minorAlleleCountsBinomial(n_unrelated, maf)
+    UNR_OBS[:,i] = out[2]
+end 
 
 #MAF_unr = sum(UNR_OBS, 2)/2
 MAF_unr = rand(500,1)
 
+#Y2 = rand(500, 1)
+Y2 = rand(500, 2)
+
 n_causal = floor(causal_var*n_variants)
 n_causal = 5
+
 using StatsBase
 causal_ind = sample(1:n_variants,n_causal,replace=false)
 causal_ind = [407 448 142 340 261]
