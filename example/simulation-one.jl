@@ -1,50 +1,68 @@
+## Julia script to run one simulation of GAMuT test
+## It requires the input variables to be specified in "variables.jl"
+## Anna Voss, Claudia Solis-Lemus, July 2018
+
+## Replicate to run in case we want to run multiple replicates
+## with the same setting:
+irep = 1
+if(!isempty(ARGS))
+    irep = ARGS[1]
+end
+
 ## Include necessary functions:
 include("../src/functions.jl")
 
 ##------------------------------------------------------------------------------
 ## Variables:
 ##------------------------------------------------------------------------------
-maf = 0.25
-traitcor = "med"
-nassoc1 = 1
-nassoc2 = 1
-npheno1 = 1
-npheno2 = 1
-n_unrelated = 5000
-n_variants = 500
-causal_var = 0.01
-test_approach = 1
-sim_approach = 3
-ignoreZ = true
-srand(1234)
-
+include("variables.jl")
+seed = 3*irep * Dates.hour(now())*Dates.minute(now())*Dates.millisecond(now())
+srand(seed);
 
 ##------------------------------------------------------------------------------
 ## Simulating genotypes:
 ##------------------------------------------------------------------------------
-
-UNR_OBS = [size(n_unrelated,1),repeat(NaN,outer=n_variants*n_unrelated)]
+G = zeros(n_unrelated,n_variants)
 for i in 1:n_variants
     out = minorAlleleCountsBinomial(n_unrelated, maf)
-    UNR_OBS[:i]= [out[G_mom]]
+    G[:,i]= out[2]
 end
 n_causal = floor(causal_var*n_variants)
-causal_ind = sample(1:n_variants,n_causal,replace=false)
+causal_ind = sample(collect(1:n_variants),Int(n_causal), replace=false)
 
 ## determine the MAF of each variant in the sample
-MAF_unr = mean(UNR_OBS, 2)/2
+MAF = mean(G, 2)/2
 
 ## we set "variant" to use the same functions as with cosi
-if maf > 0.05
-    variant = "common"
-else
-    variant = "rare"
-end
-
+variant = maf > 0.05 ? "common" : "rare"
 
 ##------------------------------------------------------------------------------
 ## Simulating phenotypes:
 ##------------------------------------------------------------------------------
-out2 = simulatePhenotypesMediation(npheno1, npheno2,traitcor, nassoc1, nassoc2, causal_ind, MAF_unr, n_unrelated, variant, UNR_OBS,approach=sim_approach, ignoreZ=ignoreZ)
-Y1 = out2[Y1]
-Y2 = out2[Y2]
+Y = simulatePhenotypes(npheno, traitcor, causal_ind, nassoc, variant, MAF, n_unrelated, G)
+
+
+##------------------------------------------------------------------------------
+## GAMuT test
+##------------------------------------------------------------------------------
+lc,ev_Lc = linear_GAMuT_geno(G)
+lc_2,ev_Lc_2 = linear_GAMuT_geno(Y)
+pval = testGAMuT(lc,ev_Lc,lc_2,ev_Lc_2)
+
+
+@rput G
+@rput Y
+R"""
+source("../src/r-scripts/all_gamut_functions.r")
+x1 = linear_GAMuT_geno(G)
+x2 = linear_GAMuT_geno(Y)
+pvalR = TestGAMuT(x1$Lc,x1$ev_Lc,x2$Lc,x2$ev_Lc)
+"""
+@rget pvalR
+
+
+## Output file
+outname = string("gamut-",irep,".txt")
+df = DataFrame(i=irep, seed=seed, maf=maf, traitcor=traitcor, nassoc=nassoc, npheno=npheno, n=n_unrelated, nvar = n_variants, causalvar = causal_var, pvalJulia = pval, pvalR = pvalR)
+using CSV
+CSV.write(outname,df);

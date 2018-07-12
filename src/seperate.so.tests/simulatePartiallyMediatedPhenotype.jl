@@ -1,7 +1,3 @@
-
-include("./src/seperate.so.tests/variables.jl")
-include("./src/seperate.so.tests/parameters4phenotypeSimulation.jl")
-
 function simulatePartiallyMediatedPhenotype(Y2,npheno1,n_unrelated, traitcor,causal_ind,nassoc1,variant,MAF_unr,UNR_OBS)
     ## Creating parameters to simulate phenotype
     out2 = parameters4phenotypeSimulation(npheno1, traitcor, causal_ind, nassoc1, variant, MAF_unr)
@@ -25,9 +21,3 @@ function simulatePartiallyMediatedPhenotype(Y2,npheno1,n_unrelated, traitcor,cau
     end
     return(Y1)
 end
-
-simulatePartiallyMediatedPhenotype(Y2, 3, n_unrelated, traitcor, causal_ind, nassoc1, variant, MAF_unr, UNR_OBS)
-##ERROR: DimensionMismatch("tried to assign 1 elements to 3 destinations") line 21
-
-simulatePartiallyMediatedPhenotype(Y2, 2, n_unrelated, traitcor, causal_ind, nassoc1, variant, MAF_unr, UNR_OBS)
-##ERROR: MethodError: no method matching Distributions.MvNormal(::Array{Float64,2}, ::Array{Float64,2})

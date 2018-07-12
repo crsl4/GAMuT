@@ -2,24 +2,19 @@ library(MASS)
 library(corpcor)
 
 ##------------------------------------------------------------------------------
-## Variables:  
+## Variables:
 ##------------------------------------------------------------------------------
-maf = 0.25 
-traitcor = "med"
-nassoc1 = 1 
-nassoc2 = 1 
-npheno1 = 1 
-npheno2 = 1 
-n_unrelated = 100 
-n_variants = 500
-causal_var = 0.01
-test.approach = 1 
-sim.approach = 3 
-ignoreZ = TRUE
-set.seed(1234)
+## Past from Julia better
+## maf = 0.25
+## traitcor = "med"
+## nassoc = 1
+## npheno = 1
+## n_unrelated = 5000
+## n_variants = 500
+## causal_var = 0.01
 
 ##------------------------------------------------------------------------------
-## Preliminary Functions: 
+## Preliminary Functions:
 ##------------------------------------------------------------------------------
 minorAlleleCountsBinomial = function(numtrios,MAF){
     mom1 = rbinom(numtrios, 1, MAF)
@@ -161,9 +156,9 @@ parameters4phenotypeSimulation = function(npheno, traitcor, causal.ind, nassoc, 
     if(nassoc > 0){
         hvec_unr<-rep(0.0,nassoc)
         for (i in 1:nassoc) {
-            if (variant=="rare")
+            if (variant=="rare"){
                 betamat_unr[i,] <- (0.4 + rnorm(length(causal.ind), 0, 0.1))*abs(log(MAF_C_unr, base=10))
-            else if (variant=="common")
+            }else if (variant=="common")
                 betamat_unr[i,] <- rep(log(1.5),length(causal.ind))
             hvec_unr[i] <- sum(betamat_unr[i,]^2*2*MAF_C_unr*(1-MAF_C_unr))
         }
@@ -346,14 +341,12 @@ if(maf > 0.05){
 }else{
     variant = 'rare'
 }
-
+X = UNR_OBS
 
 ##------------------------------------------------------------------------------
 ## Simulating phenotypes:
 ##------------------------------------------------------------------------------
-out2 = simulatePhenotypesMediation(npheno1, npheno2,traitcor, nassoc1, nassoc2, causal.ind, MAF_unr, n_unrelated, variant, UNR_OBS,approach=sim.approach, ignoreZ=ignoreZ)
-Y1 = out2$Y1
-Y2 = out2$Y2
+Y = simulatePhenotypes(npheno, traitcor, causal.ind, nassoc, variant, MAF_unr, n_unrelated, X)
 
-X = UNR_OBS
-Y = cbind(Y1,Y2)
+
+

@@ -12,9 +12,9 @@ using StatsBase
 ## Including necessary functions:
 include("seperate.so.tests/Parameters4PhenotypeSimulation.jl")
 include("seperate.so.tests/simulateFullyMediatedPhenotype.jl")
-include("seperate.so.tests/blockMatrixAntiDiagonal.jl")
+##include("seperate.so.tests/blockMatrixAntiDiagonal.jl")
+##include("seperate.so.tests/blockMatrixDiagonal.jl")
 include("seperate.so.tests/simulatePartiallyMediatedPhenotype.jl")
-include("seperate.so.tests/blockMatrixDiagonal.jl")
 include("seperate.so.tests/simulatePhenotypes.jl")
 include("seperate.so.tests/createCovMatrix.jl")
 include("seperate.so.tests/simulatePhenotypesMediation.jl")

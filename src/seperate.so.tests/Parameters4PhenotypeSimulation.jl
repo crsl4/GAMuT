@@ -19,7 +19,7 @@ function parameters4phenotypeSimulation(npheno, traitcor, causal_ind, nassoc, va
             end
             tmp = betamat_unr[i,:].^2
             tmp2 = 2*MAF_C_unr.*(1-MAF_C_unr)
-            hvec_unr[i] = sum(tmp .* tmp2')
+            hvec_unr[i] = sum(tmp .* tmp2)
         end
 
             ## note: the first nassoc phenotypes are the ones that are associated with the genotype
@@ -40,3 +40,5 @@ function parameters4phenotypeSimulation(npheno, traitcor, causal_ind, nassoc, va
     end
     return(betamat_unr, cov_unr)
 end
+
+
