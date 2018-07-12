@@ -1,26 +1,14 @@
-using Distributions
-using Rmath
-using Distributions
-using MultivariateStats
-using GLM
-
-include("./src/seperate.so.tests/variables.jl")
-include("./src/seperate.so.tests/simulatePhenotypes.jl")
-include("./src/seperate.so.tests/splitPhenotypeMatrix.jl")
-include("./src/seperate.so.tests/simulateFullyMediatedPhenotype.jl")
-include("./src/seperate.so.tests/simulatePartiallyMediatedPhenotype.jl")
-
-function simulatePhenotypesMediation(npheno1, npheno2,traitcor, nassoc1, nassoc2, causal_ind, MAF_unr, n_unrelated, variant,UNR_OBS, approach=1, numpcs=1, ignoreZ=false) 
+function simulatePhenotypesMediation(npheno1, npheno2,traitcor, nassoc1, nassoc2, causal_ind, MAF_unr, n_unrelated, variant,UNR_OBS, approach=1, numpcs=1, ignoreZ=false)
     if approach == 1
             P0_UNR = simulatePhenotypes(npheno1+npheno2, traitcor, causal_ind, nassoc1+nassoc2, variant, MAF_unr, n_unrelated, UNR_OBS)
             ## Now, we want to split this matrix into two to test for mediation
             out3 = splitPhenotypeMatrix(P0_UNR,nassoc1, nassoc2,npheno1,npheno2)
             Y1 = out3[:Y1]
             Y2 = out3[:Y2]
-    elseif approach == 20 #No Mediatio 
+    elseif approach == 20 #No Mediatio
         Y1 = simulatePhenotypes(npheno1, traitcor, causal_ind, nassoc1, variant, MAF_unr, n_unrelated, UNR_OBS)
         Y2 = simulatePhenotypes(npheno2, traitcor, causal_ind, nassoc2, variant, MAF_unr, n_unrelated, UNR_OBS)
-    elseif approach == 2 && nassoc1 == 0 #Full Mediation 
+    elseif approach == 2 && nassoc1 == 0 #Full Mediation
         Y2 = simulatePhenotypes(npheno2, traitcor, causal_ind, nassoc2, variant, MAF_unr, n_unrelated, UNR_OBS)
         Y1 = simulateFullyMediatedPhenotype(Y2, npheno1, n_unrelated, traitcor)
     elseif approach == 2 && nassoc1 > 0 # Partial Mediation
@@ -39,7 +27,7 @@ function simulatePhenotypesMediation(npheno1, npheno2,traitcor, nassoc1, nassoc2
             if nassoc1 == 0
                 P1 = simulateFullyMediatedPhenotype(Z, npheno1, n_unrelated, traitcor)
             elseif nassoc1 > 0
-                P1 = simulatePartiallyMediatedPhenotype(Z,npheno1,n_unrelated, traitcor,causal_ind,nassoc1,variant,MAF_unr,UNR_OBS) 
+                P1 = simulatePartiallyMediatedPhenotype(Z,npheno1,n_unrelated, traitcor,causal_ind,nassoc1,variant,MAF_unr,UNR_OBS)
             else
                 error("nassoc1 should be >=0")
             end
@@ -57,13 +45,13 @@ function simulatePhenotypesMediation(npheno1, npheno2,traitcor, nassoc1, nassoc2
             prop = pc[sdev[1]]/sum(pc[sdev])
             print(["Proportion of variance explained by PC1: " prop])
             Z = [pc[x[1:size(x,1), 1:numpcs]]]
-            ## ------------------------------------------- 
+            ## -------------------------------------------
             Y2 = [convert(Int64, (size(P2, 1)*size(P2, 2))), size(P2, 2)]
             for i in 1:size(P2, 2)
                 #GLM
                 f = lm(P1[1, i]~Z)
 ##------------------------------------------------------------------------------
-## Convert: 
+## Convert:
 ##------------------------------------------------------------------------------
                 Y2[:i] = residuals(f)
             end
@@ -71,7 +59,7 @@ function simulatePhenotypesMediation(npheno1, npheno2,traitcor, nassoc1, nassoc2
             for i in 1:size(P1, 2)
                 f = lm(P1[1, i]~Z)
 ##------------------------------------------------------------------------------
-## Convert: 
+## Convert:
 ##------------------------------------------------------------------------------
                 Y1[:i] = residuals(f)
             end

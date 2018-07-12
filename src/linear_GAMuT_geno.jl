@@ -1,5 +1,4 @@
 #Genotypic Similarity: linear kernel
-using NamedArrays
 function linear_GAMuT_geno(x)
     lc = x'*x #Made specifically for eigvals function
     ev_Lc = eigvals(lc, permute=false, scale=false)

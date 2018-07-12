@@ -1,7 +1,3 @@
-include("./src/seperate.so.tests/variables.jl")
-include("./src/seperate.so.tests/createCovMatrix.jl")
-using Rmath
-
 ## function to set up the parameters to simulate the phenotypes associated with genotypes
 ## it returns the beta matrix and the covariance matrix
 function parameters4phenotypeSimulation(npheno, traitcor, causal_ind, nassoc, variant, MAF_unr)
@@ -27,17 +23,17 @@ function parameters4phenotypeSimulation(npheno, traitcor, causal_ind, nassoc, va
         end
 
             ## note: the first nassoc phenotypes are the ones that are associated with the genotype
-        for i in 1:nassoc 
+        for i in 1:nassoc
             for ii in 1:nassoc
                 if i==ii
                     cov_unr[i,ii] = 1-hvec_unr[i]
-                elseif ii>i 
+                elseif ii>i
                     cov_unr[i,ii] = cov_unr[i,ii]*((1-hvec_unr[i])^0.5)*((1-hvec_unr[ii])^0.5)
                     cov_unr[ii,i] = cov_unr[i,ii]
                 end
             end
         end
-    
+
         if !isposdef(cov_unr)
             isposdef!(cov_unr) || error("cannot make positive definite")
         end

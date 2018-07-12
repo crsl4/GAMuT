@@ -1,8 +1,3 @@
-using Distributions
-using Rmath
-using Distributions
-using MultivariateStats
-using GLM
 
 include("./src/seperate.so.tests/variables.jl")
 include("./src/seperate.so.tests/parameters4phenotypeSimulation.jl")
@@ -19,7 +14,7 @@ function simulatePartiallyMediatedPhenotype(Y2,npheno1,n_unrelated, traitcor,cau
             mu = zeros(npheno1)
             for j in 1:size(Y2,2)
                 mu = Y2[i, j]
-            end  
+            end
         else
             #Works
             mu = Y2[i, 1:npheno1]

@@ -1,8 +1,3 @@
-using Distributions
-
-include("./src/seperate.so.tests/variables.jl")
-include("./src/seperate.so.tests/createCovMatrix.jl")
-
 function simulateFullyMediatedPhenotype(Y2,npheno1,n_unrelated,traitcor)
     Y1 = zeros(npheno1*n_unrelated, npheno1)
     cov = createCovMatrix(npheno1, traitcor)
@@ -12,7 +7,7 @@ function simulateFullyMediatedPhenotype(Y2,npheno1,n_unrelated,traitcor)
             for j in 1:size(Y2, 2)
                 mu[j] = Y2[i,j]
             end
-        else  #Works  
+        else  #Works
             mu = Y2[i,1:npheno1]
         end
         d = MvNormal(mu, cov)
@@ -20,7 +15,3 @@ function simulateFullyMediatedPhenotype(Y2,npheno1,n_unrelated,traitcor)
     end
     return(Y1)
 end
-
-npheno1=2
-simulateFullyMediatedPhenotype(Y2,npheno1,n_unrelated,traitcor)
-###InexactError

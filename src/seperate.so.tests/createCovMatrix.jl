@@ -1,8 +1,3 @@
-using Distributions
-
-npheno = 1
-traitcor = "med"
-
 ## function to create the phenotype covariance matrix
 ## it takes as input the number of phenotypes: npheno, and the type of correlation:
 ## "none","low", "med", "high"
@@ -23,7 +18,7 @@ function createCovMatrix(npheno, traitcor)
         if traitcor == "med" || traitcor == "block" || traitcor == "antiblock"
             phencor_ll = 0.3
             phencor_ul = 0.5
-         else 
+         else
             if traitcor == "high"
                 phencor_ll = 0.5
                 phencor_ul = 0.7
