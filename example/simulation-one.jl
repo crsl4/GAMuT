@@ -64,5 +64,8 @@ pvalR = TestGAMuT(x1$Lc,x1$ev_Lc,x2$Lc,x2$ev_Lc)
 ## Output file
 outname = string("gamut-",irep,".txt")
 df = DataFrame(i=irep, seed=seed, maf=maf, traitcor=traitcor, nassoc=nassoc, npheno=npheno, n=n_unrelated, nvar = n_variants, causalvar = causal_var, pvalJulia = pval, pvalR = pvalR)
+
+colnames = irep == 1 ? true : false
+
 using CSV
-CSV.write(outname,df);
+CSV.write(outname,df, header=colnames);
