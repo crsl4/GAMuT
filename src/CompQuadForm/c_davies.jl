@@ -45,7 +45,7 @@ function errbd!(u, cx, sigsq, n, lb, nc, r) ##u, cx, sigsq, lb, nc are doubles a
         xconst = xconst + lj * (ncj / y + nj) / y
         sum1 = sum1 + ncj * (x/y)^2 + nj * x^2 /y +log1(-x, false) 
     end
-    cx = xconst  ##had index but this does not work here
+    cx[1] = xconst  ##had index but this does not work here
     return(exp1(-0.5 * sum1))
 end
 
@@ -54,7 +54,8 @@ function ctff(accx, upn, meanvalue, lmax, lmin, sigsq, n, lb, nc, r, xconst) ##a
     u2 = upn
     u1 = 0.0
     c1 = meanvalue 
-    c2 = Number[] ##this doesn't work with errbd
+    c2 = Number[]
+    c2[1] = 0.0
     if u2 > 0.0
         rb = 2.0 * lmax 
     else
@@ -63,7 +64,8 @@ function ctff(accx, upn, meanvalue, lmax, lmin, sigsq, n, lb, nc, r, xconst) ##a
     for u = u2 / (1.0 + u2 * rb)
         while errbd!(u, c2, sigsq, n, lb, nc, r) > accx 
             u1 = u2
-            c1 = c2[1] ##produces an error; I can't remember why we set these equal
+            c2[1] = xconst[1]
+            c1 = c2[1]
             u2 = 2.0 * u2
         end
     end
@@ -72,10 +74,10 @@ function ctff(accx, upn, meanvalue, lmax, lmin, sigsq, n, lb, nc, r, xconst) ##a
             u = (u1 + u2) / 2.0
             if (errbd!(u / (1.0 + u * rb), xconst, sigsq, n, lb, nc, r) > accx) 
                 u1 = u
-                c1 = xconst[1] 
+                c1 = xconst[1]
              else
                 u2 = u
-                c2[1] = xconst[1]  ##could we just say xconst and use sxconst[1] below for ctff
+                c2[1] = xconst[1]  
              end
         end 
     end
@@ -201,11 +203,12 @@ end
 #coef of tausq in error when convergence factor of
 #exp1(-0.5 * tausq * u ^ 2) is used when df is evaluated at x
 function cfe(x, lb, th, r, ndstart, n, nc) ##th, n, r are ints everything else is double except ndstart = Bool
-    if order(ndstart) == true  ##when will this happen?
-        axl = abs(x) 
-        sxl = (x > 0.0) ? 1.0 : -1.0 
-        sum1 = 0
+    if ndstart == true
+        order(ndstart) 
     end
+    axl = abs(x) 
+    sxl = (x > 0.0) ? 1.0 : -1.0 
+    sum1 = 0
     for j in r:1
         t = th[j]
         if lb[t] * sxl > 0.0
@@ -256,13 +259,15 @@ end
     #trace[4]         truncation point in initial integration
     #trace[5]         s.d. of initial convergence factor
     #trace[6]         cycles to locate integration parameters
-function qfc(lb1, nc1, n1, r1, sigma, c1, lim1, acc, trace, ifault, res, tausq, th, xconst) #doubles except ifault, r1, n1, lim1 = int
+function qfc(lb1, nc1, n1, r1, sigma, c1, lim1, acc, trace, ifault, res, tausq, th) #doubles except ifault, r1, n1, lim1 = int
     r = r1[1]
     lim = lim1[1]
-    c = c1[0]
+    c = c1[1]
     n = n1
     lb = lb1
     nc = nc1
+    xconst = Number[]
+    xconst[1] = 0.0
 
     #Label L1, L2
     for j in 1:7 
