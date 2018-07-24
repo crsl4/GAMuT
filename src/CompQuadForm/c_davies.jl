@@ -1,4 +1,4 @@
-function log1(x, first)
+function log1(x, first) ##x is value and first is Bool
     if abs(x) > 0.1
         if first == true
             return(log(1.0 + x))
@@ -32,11 +32,11 @@ function exp1(x)
 end
 
 #find bound on tail probability using mgf, cutoff point returned to cx
-function errbd!(u, cx, sigsq, n, lb, nc, r)
+function errbd!(u, cx, sigsq, n, lb, nc, r) ##u, cx, sigsq, lb, nc are doubles and n, r are ints
     xconst = u * sigsq 
     sum1 = u * xconst
     u = 2.0 * u
-    for j in (r-1):0 ##source says r step -1 until 1 do##
+    for j in r:1
         nj = n[j]     
         lj = lb[j] 
         ncj = nc[j] 
@@ -45,37 +45,37 @@ function errbd!(u, cx, sigsq, n, lb, nc, r)
         xconst = xconst + lj * (ncj / y + nj) / y
         sum1 = sum1 + ncj * (x/y)^2 + nj * x^2 /y +log1(-x, false) 
     end
-    cx[1] = xconst 
+    cx = xconst  ##had index but this does not work here
     return(exp1(-0.5 * sum1))
 end
 
 #find ctff so that p(qf > ctff) < accx  if (upn > 0, p(qf < ctff) < accx otherwise
-function ctff(accx, upn, meanvalue, lmax, lmin, sigsq, n, lb, nc, r) 
+function ctff(accx, upn, meanvalue, lmax, lmin, sigsq, n, lb, nc, r, xconst) ##all doubles except n, r are ints
     u2 = upn
     u1 = 0.0
     c1 = meanvalue 
-    c2 = Number[]
+    c2 = Number[] ##this doesn't work with errbd
     if u2 > 0.0
         rb = 2.0 * lmax 
     else
         rb = 2.0 * lmin 
     end
     for u = u2 / (1.0 + u2 * rb)
-        while errbd(u, c2, sigsq, n, lb, nc, r) > accx ##double check that this works(while loops all from source)##
+        while errbd!(u, c2, sigsq, n, lb, nc, r) > accx 
             u1 = u2
-            c1 = c2[1]
+            c1 = c2[1] ##produces an error; I can't remember why we set these equal
             u2 = 2.0 * u2
         end
     end
     for u = (c1 - meanvalue) / (c2[1] - meanvalue)
         while u < 0.9
             u = (u1 + u2) / 2.0
-            if (errbd(u / (1.0 + u * rb), xconst, sigsq, n, lb, nc, r) > accx) #double check xconst index##
+            if (errbd!(u / (1.0 + u * rb), xconst, sigsq, n, lb, nc, r) > accx) 
                 u1 = u
-                c1 = xconst ##Index?##
+                c1 = xconst[1] 
              else
                 u2 = u
-                c2[1] = xconst ##Index?##
+                c2[1] = xconst[1]  ##could we just say xconst and use sxconst[1] below for ctff
              end
         end 
     end
@@ -85,7 +85,7 @@ function ctff(accx, upn, meanvalue, lmax, lmin, sigsq, n, lb, nc, r)
 end
 
 #bound integration error due to truncation at u
-function truncation(u, sigsq, tausq, lb, nc, n)
+function truncation(u, tausq, lb, nc, n, sigsq, r) ##all doubles except n, r are ints
     sum1 = 0.0
     prod2 = 0.0
     prod3 = 0.0
@@ -93,8 +93,8 @@ function truncation(u, sigsq, tausq, lb, nc, n)
     sum2 = (sigsq +tausq) * u^2
     prod1 = 2.0 * sum2
     u = 2.0 * u
-    for j in 0:r ## source says 1 step 1 until r)
-        lj = lb[j]
+    for j in 1:r 
+        lj = lb[j] ##bounds error bc only 1 element; could create a zeros array first but don't know if consistent with c
         ncj = nc[j]
         nj = n[j]
         x = (u * lj)^2
@@ -107,7 +107,7 @@ function truncation(u, sigsq, tausq, lb, nc, n)
             prod1 = prod1 + nj * log1(x, true) 
         end
     end
-    sum1 = 0.5 *sum1 #this would stil be zero?!?!
+    sum1 = 0.5 *sum1 
     prod2 = prod1 + prod2
     prod3 = prod1 + prod3
     x = exp1(-sum1 - 0.25 * prod2) / pi
@@ -127,36 +127,41 @@ function truncation(u, sigsq, tausq, lb, nc, n)
 end
 
 #find u such that truncation(u) < accx and truncation(u / 1.2) > accx
-function findu(ut, accx)  ##check##
-    divis = [2.0, 1.4, 1.2, 1.1] ##not in source##
+function findu(ut, accx, tausq, lb, nc, n, sigsq, r) ##all doubles except n, r are ints
+    divis = [2.0, 1.4, 1.2, 1.1]
     u = ut / 4
-    if truncation(u, 0.0) > accx
+    if truncation(u, 0.0, tausq, lb, nc, n) > accx
         for u = ut
-            #while truncation(u, 0) > accx ##seems redundant##
+            while truncation(u, 0, lb, nc, n, sigsq, r) > accx 
                 ut = ut * 4.0
-            #end 
+            end 
         end
     else
         ut = u
-        for u = u / 4.0 ##If needed above need while loop here too##
-            ut = u 
+        for u = u / 4.0
+            while truncation(u, 0, lb, nc, n, sigsq, r) <= accx 
+                ut = u 
+            end
         end
-    for i in 0:4
-        u = ut / divis[i]
     end
+    for i in 1:4
+        u = ut / divis[i]
+        if truncation(u, 0, lb, nc, n, sigsq, r) <= accx
+            ut = u
+        end
     end
 end
 
 #carry out integration with nterm terms, at stepsize interv.  
 #if (! mainx) multiply integrand by 1.0 - exp(-0.5 * tausq * u ^ 2)
-function integrate(nterm, interv, c, sigsq, n, lb, nc,  tausq, mainx)
+function integrate(nterm, interv, tausq, mainx, c, sigsq, n, lb, nc, r) ##nterm, n, r = ints all others are double except mainx = Bool
     inpi = interv / pi
     for k in nterm:0
         u = (k + 5.0) * interv
         sum1 = -2.0 * u * c 
         sum2 = abs(sum1)
         sum3 = - 0.5 * sigsq * u^2
-        for j in (r-1):0 ##source says just r##
+        for j in r:1 
             nj = n[j]
             x = 2.0 * lb[j] * u
             y = x^2
@@ -167,38 +172,41 @@ function integrate(nterm, interv, c, sigsq, n, lb, nc,  tausq, mainx)
             sum2 = sum2 + abs(z)
         end
         x = inpi * exp1(sum3) / u
-    end
-    if mainx == false ##Statement as a whole is different in source##
-        x = x * (1.0 - exp1(-0.5 * tausq * u^2))
+        if mainx == false 
+            x = x * (1.0 - exp1(-0.5 * tausq * u^2))
+        end
         sum1 = sin(0.5 * sum1) * x
         sum2 = 0.5 * sum2 * x
-        intl = intl + sum1
+        intl = intl + sum1 ##listed as if statement in source
         ersm = ersm + sum2
     end
 end
 
+#find order of absolute values of lb
+function order(x, lb, th, r, ndstart)
+    for j in 1:r 
+        lj = abs(lb[j])
+        for k in j:1  
+            if lj > abs(lb[th[k]]) ##bounds error could call zeros()
+                th[k + 1] = th[k]
+            else
+                th[k + 1] = j
+            end
+        k = -1
+        end
+    end
+    ndstart = false
+end
+
 #coef of tausq in error when convergence factor of
 #exp1(-0.5 * tausq * u ^ 2) is used when df is evaluated at x
-function cfe(x, lb, th, ndstart, n, nc) 
-    if ndstart == true 
-        #find order of absolute values of lb
-        for j in 0:r ##source says 1:r##
-            lj = abs(lb[j])
-            for k in (j-1):0 ##source goes to 1##
-                if lj > abs(lb[th[k]])
-                    th[k + 1] = th[k]
-                else
-                    th[k + 1] = j
-                end
-            k = -1
-            end
-        end
-        ndstart = false
+function cfe(x, lb, th, r, ndstart, n, nc) ##th, n, r are ints everything else is double except ndstart = Bool
+    if order(ndstart) == true  ##when will this happen?
         axl = abs(x) 
-        sxl = (x > 0.0) ? 1.0 : -1.0 ##source says sign(x)?##
+        sxl = (x > 0.0) ? 1.0 : -1.0 
         sum1 = 0
     end
-    for j in (r-1):0 ##r to 1 in source##
+    for j in r:1
         t = th[j]
         if lb[t] * sxl > 0.0
             lj = abs(lb[t])
@@ -208,20 +216,19 @@ function cfe(x, lb, th, ndstart, n, nc)
                 axl = axl2
                 sum1 = (axl - axl1) / lj
             end
-            for k in (j-1):0 ##source says j to 1##
+            for k in j:1
                 sum1 = sum1 + (n[th[k]] + n[th[k]])
                 @goto l
             end
         end
     end
     @label l
-        if sum1 > 100.0
+        if sum1 > 100.0 ##check that this gets recognized 
             fail = true
             return(1.0)
         else
-            return(2.0^((sum1 / 4.0) / (pi * axl^2))
+            return(2.0^((sum1 / 4.0) / (pi * axl^2)))
         end
-    end
 end
 
 #distribution function of a linear combination of non-central chi-squared random variables :
@@ -249,11 +256,7 @@ end
     #trace[4]         truncation point in initial integration
     #trace[5]         s.d. of initial convergence factor
     #trace[6]         cycles to locate integration parameters
-function qfc(lb1, nc1, n1, r1, sigma, c1, lim1, acc, trace, ifault, res)
-    #if env != 0 ##howto##
-        #ifault = 4
-        #@goto endofproc
-    #end
+function qfc(lb1, nc1, n1, r1, sigma, c1, lim1, acc, trace, ifault, res, tausq, th, xconst) #doubles except ifault, r1, n1, lim1 = int
     r = r1[1]
     lim = lim1[1]
     c = c1[0]
@@ -262,7 +265,7 @@ function qfc(lb1, nc1, n1, r1, sigma, c1, lim1, acc, trace, ifault, res)
     nc = nc1
 
     #Label L1, L2
-    for j in 0:7 ##source says 1:7##
+    for j in 1:7 
         trace[j] = 0.0
     end
     ifault = 0 
@@ -274,11 +277,6 @@ function qfc(lb1, nc1, n1, r1, sigma, c1, lim1, acc, trace, ifault, res)
     ndtsrt = true
     fail = false
     xlim = lim
-    #th = malloc ##howto## Referenced in endofproc part-don't need this(only in c)##
-    #if !th 
-        #ifault = 5
-        #@goto endofproc
-   #end
     
     # find mean, sd, max and min of lb,
     #check that parameter values are valid 
@@ -287,7 +285,7 @@ function qfc(lb1, nc1, n1, r1, sigma, c1, lim1, acc, trace, ifault, res)
     lmax = 0.0
     lmin = 0.0
     meanvalue = 0.0
-    for j in 0:r ##Soure says 1:r##
+    for j in 1:r 
         nj = n[j]
         lj = lb[j]
         ncj = nc[j]
@@ -320,16 +318,16 @@ function qfc(lb1, nc1, n1, r1, sigma, c1, lim1, acc, trace, ifault, res)
     un = -up
     
     #truncation point with no convergence factor
-    findu(utx, 0.5 * acc1)
+    findu(utx, 0.5 * acc1, tausq, lb, nc, n, sigsq, r)
     
     #Does convergence factor help
     if c != 0.0 && almx > 0.07 * sd
-        tausq = 0.25 * acc1 / cfe(c)
-        if fail == true## check##
+        tausq = 0.25 * acc1 / cfe(c, lb, th, r, ndstart, n, nc)
+        if fail == true
             fail = false
-        elseif truncation(utx, tausq) < 0.2 * acc1
+        elseif truncation(utx, tausq, sigsq, lb, nc, n, r) < 0.2 * acc1
             sigsq = sigsq + tausq
-            findu(utx, 0.25 * acc1)
+            findu(utx, 0.25 * acc1, tausq, lb, nc, n, sigsq, r)
             trace[6] = sqrt(tausq) 
         end
     end
@@ -338,13 +336,13 @@ function qfc(lb1, nc1, n1, r1, sigma, c1, lim1, acc, trace, ifault, res)
 
     #find RANGE of distribution, quit if outside this
     @label l1
-        d1 = ctff(acc1, up) - c ##don't know what up is##
+        d1 = ctff(acc1, up, meanvalue, lmax, lmin, sigsq, n, lb, nc, r, xconst) - c ##may need index for up##
         qfval = -1 
         if d1 < 0.0
             qfval = 1.0
             @goto endofproc
         end
-        d2 = c - ctff( acc1, un) ##Don't know what un is##
+        d2 = c - ctff( acc1, un, meanvalue, lmax, lmin, sigsq, n, lb, nc, r, xconst) ##May need index for un##
         if d2 < 0.0
             qfval = 0.0
             @goto endofproc
@@ -363,7 +361,7 @@ function qfc(lb1, nc1, n1, r1, sigma, c1, lim1, acc, trace, ifault, res)
                 ifault = 1 
                 @goto endofproc
             end
-            ntm = floor(xntm + 0.5) ##This line and above (to line 289) is not in source##
+            ntm = floor(xntm + 0.5) 
             intv1 = utx / ntm
             x = 2.0 * pi / intv1 
             if x <= abs(c) 
@@ -371,22 +369,22 @@ function qfc(lb1, nc1, n1, r1, sigma, c1, lim1, acc, trace, ifault, res)
             end
             
             #Calculate Convergence Factor
-            tausq = 0.33 * acc1 / (1.1 * (cfe(c-x) + cfe(c+x)))
+            tausq = 0.33 * acc1 / (1.1 * (cfe(c-x, lb, th, r, ndstart, n, nc) + cfe(c+x, lb, th, r, ndstart, n, nc)))
             if fail
                 @goto l2
             end
             acc1 = 0.67 * acc1
-            ##There is another if statement in the source code here##
+    
             
             #auxillary integration
-            integrate(ntm, intv1, tausq) ##check if values need to be in input for qfc function##There is a false value input in source##
+            integrate(ntm, intv1, tausq, false, c, sigsq, n, lb, nc, r)
             xlim = xlim - xntm
             sigsq = sigsq + tausq
             trace[3] = trace[3] + 1 
             trace[2] = trace[2] + ntm + 1
             
             #find truncation point with new convergence factor
-            findu(utx, 0.25 * acc1)
+            findu(utx, 0.25 * acc1, tausq, lb, nc, n, sigsq, r)
             acc1 = 0.75 * acc1
             @goto l1
         end
@@ -398,12 +396,12 @@ function qfc(lb1, nc1, n1, r1, sigma, c1, lim1, acc, trace, ifault, res)
             ifault = 1
             @goto endofproc
         end
-        nt = floor(xnt + 0.5) ##Not in source##
-        integrate(nt, inv, 0.0, true)
+        nt = floor(xnt + 0.5) 
+        integrate(nt, inv, 0.0, true, c, sigsq, n, lb, nc, r)
         trace[3] = trace[3] + 1 
         trace[2] = trace[2] + nt + 1
-        qfval = 0.5 - intl ##source says this and also substacts intl2##
-        trace[1] = ersm ##source says ersm = ersm1 + ersm2##
+        qfval = 0.5 - intl 
+        trace[1] = ersm 
         
         #test whether round-off error could be significant 
         #allow for radix 8 or 16 machines
@@ -416,8 +414,8 @@ function qfc(lb1, nc1, n1, r1, sigma, c1, lim1, acc, trace, ifault, res)
             end
         end
     @label endofproc
-        #th  ##Not in source so prob not needed##
+        #gc() 
         trace[7] = count
         res[1] = qfval
-        return(res[1])  ##What to return; says qf at end of source##
+        return
 end

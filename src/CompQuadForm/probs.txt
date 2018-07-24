@@ -1,0 +1,22 @@
+Errbd:
+-! does not seem to do anything(becomes part of function name)
+-cx = xconst works w/o index but want to make sure this is okay
+
+Ctff:
+-C2 value
+
+Truncation:
+-Bounds error due to indexing could fix by zeros array but need t make sure it is -consistent with c code if this is done
+
+Order:
+-Bounds error (see Truncation)
+
+Cfe:
+-When will order(ndstart) = true? 
+-Make sure sum1 is recognized in "l"
+
+Qfc:
+-Have not run
+ 
+
+
