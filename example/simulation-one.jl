@@ -2,6 +2,13 @@
 ## It requires the input variables to be specified in "variables.jl"
 ## Anna Voss, Claudia Solis-Lemus, July 2018
 
+## Modified to run in HGCC.
+## We need to have in the same folder:
+## - simulation-one.jl
+## - functions.jl
+## - variables.jl
+## - all_gamut_functions.r
+
 ## Replicate to run in case we want to run multiple replicates
 ## with the same setting:
 irep = 1
@@ -10,7 +17,7 @@ if(!isempty(ARGS))
 end
 
 ## Include necessary functions:
-include("../src/functions.jl")
+include("functions.jl")
 
 ##------------------------------------------------------------------------------
 ## Variables:
@@ -53,7 +60,7 @@ pval = testGAMuT(lc,ev_Lc,lc_2,ev_Lc_2)
 @rput G
 @rput Y
 R"""
-source("../src/r-scripts/all_gamut_functions.r")
+source("all_gamut_functions.r")
 x1 = linear_GAMuT_geno(G)
 x2 = linear_GAMuT_geno(Y)
 pvalR = TestGAMuT(x1$Lc,x1$ev_Lc,x2$Lc,x2$ev_Lc)
