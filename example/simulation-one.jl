@@ -16,6 +16,7 @@ include("../src/functions.jl")
 ## Variables:
 ##------------------------------------------------------------------------------
 include("variables.jl")
+import Dates
 seed = 3*irep * Dates.hour(now())*Dates.minute(now())*Dates.millisecond(now())
 srand(seed);
 
@@ -68,4 +69,4 @@ df = DataFrame(i=irep, seed=seed, maf=maf, traitcor=traitcor, nassoc=nassoc, nph
 colnames = irep == 1 ? true : false
 
 using CSV
-CSV.write(outname,df, header=colnames);
+CSV.write(outname, df, header=colnames);

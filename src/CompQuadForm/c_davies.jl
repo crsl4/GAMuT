@@ -1,4 +1,4 @@
-function log1(x, first) ##x is value and first is Bool
+function log1(x::Float64, first::Bool) 
     if abs(x) > 0.1
         if first == true
             return(log(1.0 + x))
@@ -23,7 +23,7 @@ function log1(x, first) ##x is value and first is Bool
 end
 
 #To avoid underflows
-function exp1(x)               
+function exp1(x::Int64)               
     if x < -50.0
         return(0)
     else 
@@ -32,7 +32,10 @@ function exp1(x)
 end
 
 #find bound on tail probability using mgf, cutoff point returned to cx
-function errbd!(u, cx, sigsq, n, lb, nc, r) ##u, cx, sigsq, lb, nc are doubles and n, r are ints
+function errbd!(u::Float64, cx::Int64, sigsq::Float64, n::Vector, lb::Float64, nc::Float64, r::Int64) 
+    if size(n, 1) != r
+        error("size of n does not equal r")
+        end
     xconst = u * sigsq 
     sum1 = u * xconst
     u = 2.0 * u
@@ -45,49 +48,54 @@ function errbd!(u, cx, sigsq, n, lb, nc, r) ##u, cx, sigsq, lb, nc are doubles a
         xconst = xconst + lj * (ncj / y + nj) / y
         sum1 = sum1 + ncj * (x/y)^2 + nj * x^2 /y +log1(-x, false) 
     end
-    cx[1] = xconst  ##had index but this does not work here
+    cx[1] = xconst   
     return(exp1(-0.5 * sum1))
 end
 
 #find ctff so that p(qf > ctff) < accx  if (upn > 0, p(qf < ctff) < accx otherwise
-function ctff(accx, upn, meanvalue, lmax, lmin, sigsq, n, lb, nc, r, xconst) ##all doubles except n, r are ints
-    u2 = upn
+function ctff(accx::Float64, upn::Float64, meanvalue::Float64, lmax::Float64, lmin::Float64, sigsq::Float64, n::Vector, lb::Float64, nc::Float64, r::Int64, xconst::Int64) 
     u1 = 0.0
     c1 = meanvalue 
     c2 = Number[]
-    c2[1] = 0.0
-    if u2 > 0.0
+    push!(c2, 0.0)
+    if upn > 0.0
         rb = 2.0 * lmax 
     else
         rb = 2.0 * lmin 
     end
-    for u = u2 / (1.0 + u2 * rb)
+    for u = upn / (1.0 + upn * rb)
         while errbd!(u, c2, sigsq, n, lb, nc, r) > accx 
-            u1 = u2
+            u1 = upn
             c2[1] = xconst[1]
             c1 = c2[1]
-            u2 = 2.0 * u2
+            upn = 2.0 * upn
         end
     end
     for u = (c1 - meanvalue) / (c2[1] - meanvalue)
         while u < 0.9
-            u = (u1 + u2) / 2.0
-            if (errbd!(u / (1.0 + u * rb), xconst, sigsq, n, lb, nc, r) > accx) 
+            u = (u1 + upn) / 2.0
+            if errbd!(u / (1.0 + u * rb), xconst, sigsq, n, lb, nc, r) > accx 
                 u1 = u
                 c1 = xconst[1]
              else
-                u2 = u
+                upn = u
                 c2[1] = xconst[1]  
              end
         end 
     end
-    ctff = c2[1]
-    upn = u2 
+    ctff = c2[1] 
     return(ctff)
 end
 
 #bound integration error due to truncation at u
-function truncation(u, tausq, lb, nc, n, sigsq, r) ##all doubles except n, r are ints
+function truncation(u::Float64, tausq::Float64, lb::Vector, nc::Vector, n::Vector, sigsq::Float64, r::Int64) 
+    if size(lb, 1) != r
+        error("size of lb does not equal r")
+    elseif size(nc, 1) != r
+        error("size of nc does not equal r")
+    elseif size(n, 1) != r
+        error("size of n does not equal r")
+    end
     sum1 = 0.0
     prod2 = 0.0
     prod3 = 0.0
@@ -96,7 +104,7 @@ function truncation(u, tausq, lb, nc, n, sigsq, r) ##all doubles except n, r are
     prod1 = 2.0 * sum2
     u = 2.0 * u
     for j in 1:r 
-        lj = lb[j] ##bounds error bc only 1 element; could create a zeros array first but don't know if consistent with c
+        lj = lb[j] 
         ncj = nc[j]
         nj = n[j]
         x = (u * lj)^2
@@ -127,12 +135,13 @@ function truncation(u, tausq, lb, nc, n, sigsq, r) ##all doubles except n, r are
     err2 =  ( x  <=  y )  ? 1.0  : y / x
     return(err1 < err2 ? err1 : err2)
 end
+#truncation(10.0, 9.0, [1 2 3], [1 2 3], [1 2 3], 7.0, 3)
 
 #find u such that truncation(u) < accx and truncation(u / 1.2) > accx
-function findu(ut, accx, tausq, lb, nc, n, sigsq, r) ##all doubles except n, r are ints
+function findu(ut::Float64, accx::Float64, tausq::Float64, lb::Vector, nc::Vector, n::Vector, sigsq::Float64, r::Int64) 
     divis = [2.0, 1.4, 1.2, 1.1]
     u = ut / 4
-    if truncation(u, 0.0, tausq, lb, nc, n) > accx
+    if truncation(u, 0.0, lb, nc, n, sigsq, r) > accx
         for u = ut
             while truncation(u, 0, lb, nc, n, sigsq, r) > accx 
                 ut = ut * 4.0
@@ -141,22 +150,30 @@ function findu(ut, accx, tausq, lb, nc, n, sigsq, r) ##all doubles except n, r a
     else
         ut = u
         for u = u / 4.0
-            while truncation(u, 0, lb, nc, n, sigsq, r) <= accx 
+            while truncation(u, 0, lb, nc, n, sigsq, r) <= accx #ERROR: MethodError: no method matching isless(::Int64, ::Void)
                 ut = u 
             end
         end
     end
     for i in 1:4
         u = ut / divis[i]
-        if truncation(u, 0, lb, nc, n, sigsq, r) <= accx
+        if truncation(u, 0, lb, nc, n, sigsq, r) <= accx #ERROR: MethodError: no method matching isless(::Int64, ::Void)
             ut = u
         end
     end
 end
+#findu(10.0, 9.0, 8.0, [1, 2, 3], [1, 2, 3], [1, 2, 3], 7.0, 3)
 
 #carry out integration with nterm terms, at stepsize interv.  
 #if (! mainx) multiply integrand by 1.0 - exp(-0.5 * tausq * u ^ 2)
-function integrate(nterm, interv, tausq, mainx, c, sigsq, n, lb, nc, r) ##nterm, n, r = ints all others are double except mainx = Bool
+function integrate(nterm::Int64, interv::Float64, tausq::Float64, mainx::Bool, c::Float64, sigsq::Float64, n::Vector, lb::Vector, nc::Vector, r::Int64) 
+    if size(lb, 1) != r
+        error("size of lb does not equal r")
+    elseif size(nc, 1) != r
+        error("size of nc does not equal r")
+    elseif size(n, 1) != r
+        error("size of n does not equal r")
+    end
     inpi = interv / pi
     for k in nterm:0
         u = (k + 5.0) * interv
@@ -183,13 +200,17 @@ function integrate(nterm, interv, tausq, mainx, c, sigsq, n, lb, nc, r) ##nterm,
         ersm = ersm + sum2
     end
 end
+#integrate(10, 9.0, 8.0, false, 7.0, 6.0, [1, 2, 3], [1, 2, 3], [1, 2, 3], 3)
 
 #find order of absolute values of lb
-function order(x, lb, th, r, ndstart)
+function order(lb::Vector, th::Vector, r::Int64, j::Int64)
+    if size(lb, 1) != r
+        error("size of lb does not equal r")
+    end
     for j in 1:r 
         lj = abs(lb[j])
         for k in j:1  
-            if lj > abs(lb[th[k]]) ##bounds error could call zeros()
+            if lj > abs(lb[th[k]]) 
                 th[k + 1] = th[k]
             else
                 th[k + 1] = j
@@ -199,18 +220,20 @@ function order(x, lb, th, r, ndstart)
     end
     ndstart = false
 end
+#order([1, 2, 3], [1, 2, 3], 3, 3)
 
 #coef of tausq in error when convergence factor of
 #exp1(-0.5 * tausq * u ^ 2) is used when df is evaluated at x
-function cfe(x, lb, th, r, ndstart, n, nc) ##th, n, r are ints everything else is double except ndstart = Bool
+function cfe(x::Float64, lb::Vector, th::Vector, r::Int64, ndstart::Bool, n::Vector, nc::Vector, j::Int64) 
+    #may need error for not equal here
     if ndstart == true
-        order(ndstart) 
+        order(lb, th, r, j) 
     end
     axl = abs(x) 
     sxl = (x > 0.0) ? 1.0 : -1.0 
     sum1 = 0
-    for j in r:1
-        t = th[j]
+    for m in r:1
+        t = th[m]
         if lb[t] * sxl > 0.0
             lj = abs(lb[t])
             axl1 = axl - lj * (n[t] + nc[t])
@@ -219,20 +242,22 @@ function cfe(x, lb, th, r, ndstart, n, nc) ##th, n, r are ints everything else i
                 axl = axl2
                 sum1 = (axl - axl1) / lj
             end
-            for k in j:1
+            for k in m:1
                 sum1 = sum1 + (n[th[k]] + n[th[k]])
                 @goto l
             end
         end
     end
     @label l
-        if sum1 > 100.0 ##check that this gets recognized 
+        if sum1 > 100.0 
             fail = true
             return(1.0)
         else
             return(2.0^((sum1 / 4.0) / (pi * axl^2)))
         end
 end
+#cfe(10.0, [1, 2, 3], [1, 2, 3], 3, false, [1, 2, 3], [1, 2, 3], 3)
+#need another test 
 
 #distribution function of a linear combination of non-central chi-squared random variables :
  #input:
@@ -259,13 +284,9 @@ end
     #trace[4]         truncation point in initial integration
     #trace[5]         s.d. of initial convergence factor
     #trace[6]         cycles to locate integration parameters
-function qfc(lb1, nc1, n1, r1, sigma, c1, lim1, acc, trace, ifault, res, tausq, th) #doubles except ifault, r1, n1, lim1 = int
-    r = r1[1]
-    lim = lim1[1]
-    c = c1[1]
-    n = n1
-    lb = lb1
-    nc = nc1
+function qfc(lb::Vector, nc::Vector, n::Vector, r::Int64, sigma::Float64, c::Float64, lim::Int64, acc::Float64, trace::Float64, ifault::Int64, res::Float64, tausq::Float64, th::Vector, ndstart::Bool) 
+    lim = lim[1]
+    c = c[1]
     xconst = Number[]
     xconst[1] = 0.0
 
@@ -285,13 +306,13 @@ function qfc(lb1, nc1, n1, r1, sigma, c1, lim1, acc, trace, ifault, res, tausq, 
     
     # find mean, sd, max and min of lb,
     #check that parameter values are valid 
-    sigsq = (sigma[0])^2 
+    sigsq = (sigma[1])^2 
     sd = sigsq
     lmax = 0.0
     lmin = 0.0
     meanvalue = 0.0
     for j in 1:r 
-        nj = n[j]
+        nj = n[j]  
         lj = lb[j]
         ncj = nc[j]
         if nc < 0 || ncj < 0.0 
@@ -310,7 +331,7 @@ function qfc(lb1, nc1, n1, r1, sigma, c1, lim1, acc, trace, ifault, res, tausq, 
         qval = c > 0.0 ? 1.0 : 0.0
         @goto endofproc
     end
-    if lmin == 0.0 && lmax == 0.0 && sigma[0] == 0.0
+    if lmin == 0.0 && lmax == 0.0 && sigma[1] == 0.0
         ifault = 3
         @goto endofproc
     end
@@ -411,7 +432,7 @@ function qfc(lb1, nc1, n1, r1, sigma, c1, lim1, acc, trace, ifault, res, tausq, 
         #test whether round-off error could be significant 
         #allow for radix 8 or 16 machines
         up = ersm
-        x = up + acc[1] / 10.0 ##Check##
+        x = up + acc[1] / 10.0 
         rats = [1, 2, 4, 8]
         for j in 0:4
             if rats[j] * x == rats[j] * up
