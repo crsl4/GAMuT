@@ -23,7 +23,7 @@ include("functions.jl")
 ## Variables:
 ##------------------------------------------------------------------------------
 include("variables.jl")
-import Dates
+using Dates
 seed = 3*irep * Dates.hour(now())*Dates.minute(now())*Dates.millisecond(now())
 srand(seed);
 
