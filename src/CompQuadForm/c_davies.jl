@@ -32,7 +32,7 @@ function exp1(x::Float64)
 end
 
 #find bound on tail probability using mgf, cutoff point returned to cx
-function errbd!(u::Float64, cx::Int64, sigsq::Float64, n::Vector, lb::Float64, nc::Float64, r::Int64) 
+function errbd!(u::Float64, cx::Vector, sigsq::Float64, n::Vector, lb::Vector, nc::Vector, r::Int64) 
     if size(n, 1) != r
         error("size of n does not equal r")
         end
@@ -48,16 +48,17 @@ function errbd!(u::Float64, cx::Int64, sigsq::Float64, n::Vector, lb::Float64, n
         xconst = xconst + lj * (ncj / y + nj) / y
         sum1 = sum1 + ncj * (x/y)^2 + nj * x^2 /y +log1(-x, false) 
     end
-    cx[1] = xconst   
+    xconst = cx[1]
     return(exp1(-0.5 * sum1))
 end
 
 #find ctff so that p(qf > ctff) < accx  if (upn > 0, p(qf < ctff) < accx otherwise
-function ctff(accx::Float64, upn::Float64, meanvalue::Float64, lmax::Float64, lmin::Float64, sigsq::Float64, n::Vector, lb::Float64, nc::Float64, r::Int64, xconst::Int64) 
+function ctff(accx::Float64, upn::Float64, meanvalue::Float64, lmax::Float64, lmin::Float64, sigsq::Float64, n::Vector, lb::Vector, nc::Vector, r::Int64, xconst::Int64) 
     u1 = 0.0
     c1 = meanvalue 
     c2 = Number[]
-    push!(c2, 0.0)
+    push!(c2, 0)
+    xconst = [xconst]
     if upn > 0.0
         rb = 2.0 * lmax 
     else
@@ -135,7 +136,7 @@ function truncation(u::Float64, tausq::Float64, lb::Vector, nc::Vector, n::Vecto
     err2 =  ( x  <=  y )  ? 1.0  : y / x
     return(err1 < err2 ? err1 : err2)
 end
-truncation(10.0/4.0, 0.0, [1, 2, 3], [1, 2, 3], [1, 2, 3], 7.0, 3)
+#truncation(10.0/4.0, 0.0, [1, 2, 3], [1, 2, 3], [1, 2, 3], 7.0, 3)
 
 #find u such that truncation(u) < accx and truncation(u / 1.2) > accx
 function findu(ut::Float64, accx::Float64, tausq::Float64, lb::Vector, nc::Vector, n::Vector, sigsq::Float64, r::Int64) 
@@ -162,7 +163,7 @@ function findu(ut::Float64, accx::Float64, tausq::Float64, lb::Vector, nc::Vecto
         end
     end
 end
-findu(10.0, 9.0, 8.0, [1, 2, 3], [1, 2, 3], [1, 2, 3], 7.0, 3)
+#findu(10.0, 9.0, 8.0, [1, 2, 3], [1, 2, 3], [1, 2, 3], 7.0, 3)
 
 #carry out integration with nterm terms, at stepsize interv.  
 #if (! mainx) multiply integrand by 1.0 - exp(-0.5 * tausq * u ^ 2)
@@ -284,22 +285,20 @@ end
     #trace[4]         truncation point in initial integration
     #trace[5]         s.d. of initial convergence factor
     #trace[6]         cycles to locate integration parameters
-function qfc(lb::Vector, nc::Vector, n::Vector, r::Int64, sigma::Float64, c::Float64, lim::Int64, acc::Float64, trace::Float64, ifault::Int64, res::Float64, tausq::Float64, th::Vector, ndstart::Bool) 
+function qfc(lb::Vector, nc::Vector, n::Vector, s::Int64, r::Int64, sigma::Float64, c::Float64, lim::Int64, acc::Float64, ifault::Int64, res::Float64, tausq::Float64, th::Vector, ndstart::Bool) 
     lim = lim[1]
     c = c[1]
     xconst = Number[]
-    xconst[1] = 0.0
+    xconst = 0.0
 
     #Label L1, L2
-    for j in 1:7 
-        trace[j] = 0.0
-    end
+    trace = zeros(Float64, 7)
     ifault = 0 
     count = 0
     intl = 0.0
     ersm = 0.0
-    qval = -1.0
-    acc1 = acc[0]
+    qfval = -1.0
+    acc1 = acc[1]
     ndtsrt = true
     fail = false
     xlim = lim
@@ -315,7 +314,7 @@ function qfc(lb::Vector, nc::Vector, n::Vector, r::Int64, sigma::Float64, c::Flo
         nj = n[j]  
         lj = lb[j]
         ncj = nc[j]
-        if nc < 0 || ncj < 0.0 
+        if nj < 0 || ncj < 0.0 
             ifault = 3
             @goto endofproc
         end
@@ -348,10 +347,10 @@ function qfc(lb::Vector, nc::Vector, n::Vector, r::Int64, sigma::Float64, c::Flo
     
     #Does convergence factor help
     if c != 0.0 && almx > 0.07 * sd
-        tausq = 0.25 * acc1 / cfe(c, lb, th, r, ndstart, n, nc)
+        tausq = 0.25 * acc1 / cfe(c, lb, th, r, ndstart, n, nc, s)
         if fail == true
             fail = false
-        elseif truncation(utx, tausq, sigsq, lb, nc, n, r) < 0.2 * acc1
+        elseif truncation(utx, tausq, lb, nc, n, sigsq, r) < 0.2 * acc1
             sigsq = sigsq + tausq
             findu(utx, 0.25 * acc1, tausq, lb, nc, n, sigsq, r)
             trace[6] = sqrt(tausq) 
@@ -362,18 +361,20 @@ function qfc(lb::Vector, nc::Vector, n::Vector, r::Int64, sigma::Float64, c::Flo
 
     #find RANGE of distribution, quit if outside this
     @label l1
-        d1 = ctff(acc1, up, meanvalue, lmax, lmin, sigsq, n, lb, nc, r, xconst) - c ##may need index for up##
+        d1 = ctff(acc1, up[1], meanvalue, convert(Float64, lmax), lmin, sigsq, n, lb, nc, r, convert(Int64, xconst)) - c    
         qfval = -1 
         if d1 < 0.0
             qfval = 1.0
             @goto endofproc
         end
-        d2 = c - ctff( acc1, un, meanvalue, lmax, lmin, sigsq, n, lb, nc, r, xconst) ##May need index for un##
+        d2 = c - ctff(acc1, un[1], meanvalue, convert(Float64, lmax), lmin, sigsq, n, lb, nc, r, convert(Int64, xconst)) 
         if d2 < 0.0
             qfval = 0.0
             @goto endofproc
         end
-        
+        ##randomly stops in the above section
+
+
         #Find integration Interval
         intv = 2.0 * pi / ((d1 > d2) ? d1 : d2)
         
@@ -398,6 +399,7 @@ function qfc(lb::Vector, nc::Vector, n::Vector, r::Int64, sigma::Float64, c::Flo
             tausq = 0.33 * acc1 / (1.1 * (cfe(c-x, lb, th, r, ndstart, n, nc) + cfe(c+x, lb, th, r, ndstart, n, nc)))
             if fail
                 @goto l2
+
             end
             acc1 = 0.67 * acc1
     
@@ -442,6 +444,6 @@ function qfc(lb::Vector, nc::Vector, n::Vector, r::Int64, sigma::Float64, c::Flo
     @label endofproc
         #gc() 
         trace[7] = count
-        res[1] = qfval
+        res = qfval
         return
 end
