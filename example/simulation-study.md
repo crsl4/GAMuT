@@ -240,3 +240,24 @@ Segmentation fault (core dumped)
 ```
 
 Problem seems to be `RCall`.
+
+
+
+
+When Anna tries to add packages to Julia, specifically Distributions, I get the following error: 
+
+julia> Pkg.add("Distributions")
+ERROR: GitError(Code:ENOTFOUND, Class:Repository, Could not find repository from 'METADATA')
+Stacktrace:
+ [1] macro expansion at ./libgit2/error.jl:99 [inlined]
+ [2] Base.LibGit2.GitRepo(::String) at ./libgit2/repository.jl:10
+ [3] macro expansion at ./pkg/entry.jl:57 [inlined]
+ [4] macro expansion at ./task.jl:302 [inlined]
+ [5] add(::String, ::Base.Pkg.Types.VersionSet) at ./pkg/entry.jl:51
+ [6] (::Base.Pkg.Dir.##4#7{Array{Any,1},Base.Pkg.Entry.#add,Tuple{String}})() at ./pkg/dir.jl:36
+ [7] cd(::Base.Pkg.Dir.##4#7{Array{Any,1},Base.Pkg.Entry.#add,Tuple{String}}, ::String) at ./file.jl:70
+ [8] #cd#1(::Array{Any,1}, ::Function, ::Function, ::String, ::Vararg{String,N} where N) at ./pkg/dir.jl:36
+ [9] add(::String) at ./pkg/pkg.jl:117
+
+Problem with Github connecting to HGCC. 
+I tried creating an ssh key pair through GitHub, but the key pair will not load with HGCC. 

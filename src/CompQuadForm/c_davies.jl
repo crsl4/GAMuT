@@ -23,7 +23,7 @@ function log1(x::Float64, first::Bool)
 end
 
 #To avoid underflows
-function exp1(x::Int64)               
+function exp1(x::Float64)               
     if x < -50.0
         return(0)
     else 
@@ -135,7 +135,7 @@ function truncation(u::Float64, tausq::Float64, lb::Vector, nc::Vector, n::Vecto
     err2 =  ( x  <=  y )  ? 1.0  : y / x
     return(err1 < err2 ? err1 : err2)
 end
-#truncation(10.0, 9.0, [1 2 3], [1 2 3], [1 2 3], 7.0, 3)
+truncation(10.0/4.0, 0.0, [1, 2, 3], [1, 2, 3], [1, 2, 3], 7.0, 3)
 
 #find u such that truncation(u) < accx and truncation(u / 1.2) > accx
 function findu(ut::Float64, accx::Float64, tausq::Float64, lb::Vector, nc::Vector, n::Vector, sigsq::Float64, r::Int64) 
@@ -143,26 +143,26 @@ function findu(ut::Float64, accx::Float64, tausq::Float64, lb::Vector, nc::Vecto
     u = ut / 4
     if truncation(u, 0.0, lb, nc, n, sigsq, r) > accx
         for u = ut
-            while truncation(u, 0, lb, nc, n, sigsq, r) > accx 
+            if truncation(u, 0.0, lb, nc, n, sigsq, r) > accx 
                 ut = ut * 4.0
             end 
         end
     else
         ut = u
         for u = u / 4.0
-            while truncation(u, 0, lb, nc, n, sigsq, r) <= accx #ERROR: MethodError: no method matching isless(::Int64, ::Void)
+            if truncation(u, 0.0, lb, nc, n, sigsq, r) <= accx 
                 ut = u 
             end
         end
     end
     for i in 1:4
         u = ut / divis[i]
-        if truncation(u, 0, lb, nc, n, sigsq, r) <= accx #ERROR: MethodError: no method matching isless(::Int64, ::Void)
+        if truncation(u, 0.0, lb, nc, n, sigsq, r) <= accx 
             ut = u
         end
     end
 end
-#findu(10.0, 9.0, 8.0, [1, 2, 3], [1, 2, 3], [1, 2, 3], 7.0, 3)
+findu(10.0, 9.0, 8.0, [1, 2, 3], [1, 2, 3], [1, 2, 3], 7.0, 3)
 
 #carry out integration with nterm terms, at stepsize interv.  
 #if (! mainx) multiply integrand by 1.0 - exp(-0.5 * tausq * u ^ 2)
