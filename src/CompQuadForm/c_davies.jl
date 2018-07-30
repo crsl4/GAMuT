@@ -197,8 +197,8 @@ function integrate(nterm::Int64, interv::Float64, tausq::Float64, mainx::Bool, c
         end
         sum1 = sin(0.5 * sum1) * x
         sum2 = 0.5 * sum2 * x
-        intl = intl + sum1 ##listed as if statement in source
-        ersm = ersm + sum2
+        intl = 0.0 + sum1 ##listed as if statement in source 
+        ersm = 0.0 + sum2 
     end
 end
 #integrate(10, 9.0, 8.0, false, 7.0, 6.0, [1, 2, 3], [1, 2, 3], [1, 2, 3], 3)
@@ -372,7 +372,7 @@ function qfc(lb::Vector, nc::Vector, n::Vector, s::Int64, r::Int64, sigma::Float
             qfval = 0.0
             @goto endofproc
         end
-        ##randomly stops in the above section
+        ##randomly stops in the above section may be because there is not a call to this label above
 
 
         #Find integration Interval
@@ -405,7 +405,7 @@ function qfc(lb::Vector, nc::Vector, n::Vector, s::Int64, r::Int64, sigma::Float
     
             
             #auxillary integration
-            integrate(ntm, intv1, tausq, false, c, sigsq, n, lb, nc, r)
+            integrate(convert(Int64, ntm), intv1, tausq, false, c, sigsq, n, lb, nc, r)
             xlim = xlim - xntm
             sigsq = sigsq + tausq
             trace[3] = trace[3] + 1 
@@ -425,7 +425,7 @@ function qfc(lb::Vector, nc::Vector, n::Vector, s::Int64, r::Int64, sigma::Float
             @goto endofproc
         end
         nt = floor(xnt + 0.5) 
-        integrate(nt, inv, 0.0, true, c, sigsq, n, lb, nc, r)
+        integrate(convert(Int64, nt), intv, 0.0, true, c, sigsq, n, lb, nc, r)
         trace[3] = trace[3] + 1 
         trace[2] = trace[2] + nt + 1
         qfval = 0.5 - intl 
@@ -447,3 +447,4 @@ function qfc(lb::Vector, nc::Vector, n::Vector, s::Int64, r::Int64, sigma::Float
         res = qfval
         return
 end
+#qfc([1, 2, 3], [1, 2, 3], [1, 2, 3], 3, 3, 10.0, 9.0, 8, 7.0, 5, 4.0, 3.0, [1, 2, 3], false)

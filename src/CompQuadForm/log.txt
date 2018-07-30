@@ -1,0 +1,31 @@
+7-30-18
+-all secondary functions have been tested with simple vectors/values and work properly
+-the primary part (non-labels) of qfc has been run with simply vectors/values without error 
+-individual functions within the labels were tested with estimated values similar to those which would be produced within the qfc function (excluding vectors) and run without error 
+
+    -integrate was run with: 
+        -l1:
+            integrate(1, 16.0, 7.0, false, 3.0, 0.0, [1, 2, 3], [1, 2, 3], [1, 2, 3], 3) 
+        -l2:
+            -integrate(0, 12.6, 0.0, true, 3.0, 0.0, [1, 2, 3], [1, 2, 3], [1, 2, 3], 3) 
+        
+        -*Integrate function was also altered so that intl and ersm = 0.0 as it says in the qfc function. This should not alter the function; it is simply helpful for individual tests
+    
+    -cfe in l1 was run with:
+        -cfe(13.0, [1, 2, 3], [1, 2, 3], 3, false, [1, 2, 3], [1, 2, 3], 3)
+    
+    -fundu in l1 was run with:
+        -findu(16.0, 0.875, 5.0, [1, 2, 3], [1, 2, 3], [1, 2, 3], 0.0, 3) 
+
+
+
+-Problems after testing: 
+    -check if the intl value in integrate needs to be embedded in an if statement as in source
+    -create another test for cfe function to ensure all parts are working properly
+    -when labels are tested within the qfc function, no output is produced and the terminal does not allow for another input 
+
+
+
+-General tasks that still need to be completed:
+    -Compile C code and compare with qfc output
+    -run simulation-one.jl tests 
