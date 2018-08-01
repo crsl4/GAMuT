@@ -10,16 +10,16 @@ using StatsBase
 
 
 ## Including necessary functions:
-include("seperate.so.tests/Parameters4PhenotypeSimulation.jl")
-include("seperate.so.tests/simulateFullyMediatedPhenotype.jl")
+include("Parameters4PhenotypeSimulation.jl")
+include("simulateFullyMediatedPhenotype.jl")
 ##include("seperate.so.tests/blockMatrixAntiDiagonal.jl")
 ##include("seperate.so.tests/blockMatrixDiagonal.jl")
-include("seperate.so.tests/simulatePartiallyMediatedPhenotype.jl")
-include("seperate.so.tests/simulatePhenotypes.jl")
-include("seperate.so.tests/createCovMatrix.jl")
-include("seperate.so.tests/simulatePhenotypesMediation.jl")
-include("seperate.so.tests/minorAlleleCountsBinomial.jl")
-include("seperate.so.tests/splitPhenotypeMatrix.jl")
+include("simulatePartiallyMediatedPhenotype.jl")
+include("simulatePhenotypes.jl")
+include("createCovMatrix.jl")
+include("simulatePhenotypesMediation.jl")
+include("minorAlleleCountsBinomial.jl")
+include("splitPhenotypeMatrix.jl")
 
 include("linear_GAMuT_geno.jl")
 include("proj_GAMuT_pheno.jl")

@@ -1,4 +1,4 @@
-function simulatePhenotypesMediation(npheno1, npheno2,traitcor, nassoc1, nassoc2, causal_ind, MAF_unr, n_unrelated, variant,UNR_OBS, effectSize, approach=1, numpcs=1, ignoreZ=false)
+function simulatePhenotypesMediation(npheno1, npheno2,traitcor, nassoc1, nassoc2, causal_ind, MAF_unr, n_unrelated, variant,UNR_OBS, effectSize, approach, numpcs, ignoreZ) ##approach and numpcs = 1, ignoreZ = false
     if approach == 1
             P0_UNR = simulatePhenotypes(npheno1+npheno2, traitcor, causal_ind, nassoc1+nassoc2, variant, MAF_unr, n_unrelated, UNR_OBS, effectSize)
             ## Now, we want to split this matrix into two to test for mediation
@@ -37,31 +37,27 @@ function simulatePhenotypesMediation(npheno1, npheno2,traitcor, nassoc1, nassoc2
             Y2 = P2
         else
             ## PCA ---------------------------------------
-            P = [P1 P2]
+            P = hcat(P1, P2)
             #Distributions pkg
             P = scale(P)
             #MutlivariateStats pkg
             pc = pcasvd(P)
-            prop = pc[sdev[1]]/sum(pc[sdev])
+            prop = pc[:sdev[1]]/sum(pc[:sdev])
             print(["Proportion of variance explained by PC1: " prop])
-            Z = [pc[x[1:size(x,1), 1:numpcs]]]
+            Z = [pc[:x[1:size(x,1), 1:numpcs]]]
             ## -------------------------------------------
             Y2 = [convert(Int64, (size(P2, 1)*size(P2, 2))), size(P2, 2)]
             for i in 1:size(P2, 2)
                 #GLM
                 f = lm(P1[1, i]~Z)
-##------------------------------------------------------------------------------
-## Convert:
-##------------------------------------------------------------------------------
-                Y2[:i] = residuals(f)
+                #NLsolve
+                Y2[:i] = f!(f)
             end
             Y1 = [convert(Int64, (size(P1, 1)*size(P1, 2))), size(P1, 2)]
             for i in 1:size(P1, 2)
                 f = lm(P1[1, i]~Z)
-##------------------------------------------------------------------------------
-## Convert:
-##------------------------------------------------------------------------------
-                Y1[:i] = residuals(f)
+                #NLsolve
+                Y1[:i] = f!(f)
             end
         end
     end

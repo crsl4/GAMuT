@@ -197,7 +197,7 @@ function integrate(nterm::Int64, interv::Float64, tausq::Float64, mainx::Bool, c
         end
         sum1 = sin(0.5 * sum1) * x
         sum2 = 0.5 * sum2 * x
-        intl = 0.0 + sum1 ##listed as if statement in source 
+        intl = 0.0 + sum1 
         ersm = 0.0 + sum2 
     end
 end
@@ -258,7 +258,6 @@ function cfe(x::Float64, lb::Vector, th::Vector, r::Int64, ndstart::Bool, n::Vec
         end
 end
 #cfe(10.0, [1, 2, 3], [1, 2, 3], 3, false, [1, 2, 3], [1, 2, 3], 3)
-#need another test 
 
 #distribution function of a linear combination of non-central chi-squared random variables :
  #input:
