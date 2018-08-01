@@ -1,6 +1,6 @@
-function simulatePartiallyMediatedPhenotype(Y2,npheno1,n_unrelated, traitcor,causal_ind,nassoc1,variant,MAF_unr,UNR_OBS)
+function simulatePartiallyMediatedPhenotype(Y2,npheno1,n_unrelated, traitcor,causal_ind,nassoc1,variant,MAF_unr,UNR_OBS, effectSize)
     ## Creating parameters to simulate phenotype
-    out2 = parameters4phenotypeSimulation(npheno1, traitcor, causal_ind, nassoc1, variant, MAF_unr)
+    out2 = parameters4phenotypeSimulation(npheno1, traitcor, causal_ind, nassoc1, variant, MAF_unr, effectSize)
     betamat_unr = out2[1]
     cov_unr = out2[2]
     ## Actual phenotype simulation:

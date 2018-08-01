@@ -1,6 +1,6 @@
-function simulatePhenotypes(npheno, traitcor, causal_ind, nassoc, variant, MAF_unr, n_unrelated, G)
+function simulatePhenotypes(npheno, traitcor, causal_ind, nassoc, variant, MAF_unr, n_unrelated, G, effectSize)
     ## Creating parameters to simulate phenotype
-    out2 = parameters4phenotypeSimulation(npheno, traitcor, causal_ind, nassoc, variant, MAF_unr)
+    out2 = parameters4phenotypeSimulation(npheno, traitcor, causal_ind, nassoc, variant, MAF_unr, effectSize)
     betamat_unr = out2[1]
     cov_unr = out2[2]
     ## Actual phenotype simulation:

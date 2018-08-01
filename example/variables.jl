@@ -8,3 +8,4 @@ npheno = 2
 n_unrelated = 5000
 n_variants = 500
 causal_var = 0.01
+effectSize = log(1.05)

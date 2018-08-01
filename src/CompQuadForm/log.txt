@@ -22,10 +22,13 @@
 -Problems after testing: 
     -check if the intl value in integrate needs to be embedded in an if statement as in source
     -create another test for cfe function to ensure all parts are working properly
-    -when labels are tested within the qfc function, no output is produced and the terminal does not allow for another input 
+    -when labels are tested within the qfc function, no output is produced and the terminal does not allow for another input.
+        - I do not see what code leads to the start of l1, so it seems to never be initiated and potentially runs an infinite loop (ends in return to l1) 
 
 
 
 -General tasks that still need to be completed:
     -Compile C code and compare with qfc output
     -run simulation-one.jl tests 
+        -ran sample of 100 files, but p-values were all equal to 0.0, so I changed value of log(1.5) in parameters4phenotypeSimulation to variable argument, "effectSize"
+    -check simulatePhenotypesMediation function 

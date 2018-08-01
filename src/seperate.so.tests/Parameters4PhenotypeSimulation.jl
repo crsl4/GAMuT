@@ -1,6 +1,6 @@
 ## function to set up the parameters to simulate the phenotypes associated with genotypes
 ## it returns the beta matrix and the covariance matrix
-function parameters4phenotypeSimulation(npheno, traitcor, causal_ind, nassoc, variant, MAF_unr)
+function parameters4phenotypeSimulation(npheno, traitcor, causal_ind, nassoc, variant, MAF_unr, effectSize)
     if npheno < nassoc
         error("Error: npheno<nassoc")
     end
@@ -15,7 +15,7 @@ function parameters4phenotypeSimulation(npheno, traitcor, causal_ind, nassoc, va
             if (variant=="rare")
                 betamat_unr[i,:] = (0.4 + rnorm(length(causal_ind), 0, 0.1))*abs(log10.(MAF_C_unr))
             elseif (variant=="common")
-                betamat_unr[i,:] = fill(log(1.5), length(causal_ind))
+                betamat_unr[i,:] = fill(effectSize, length(causal_ind))
             end
             tmp = betamat_unr[i,:].^2
             tmp2 = 2*MAF_C_unr.*(1-MAF_C_unr)
