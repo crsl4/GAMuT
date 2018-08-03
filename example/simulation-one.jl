@@ -39,7 +39,11 @@ n_causal = floor(causal_var*n_variants)
 causal_ind = sample(collect(1:n_variants),Int(n_causal), replace=false)
 
 ## determine the MAF of each variant in the sample
-MAF = mean(G, 2)/2
+MAF = mapslices(mean, G, 2)/2
+
+##for comparison with Mike's code
+using StatsFuns
+beta_weight = betapdf(MAF, 1, 25)/betapdf(0, 1, 25)
 
 ## we set "variant" to use the same functions as with cosi
 variant = maf > 0.05 ? "common" : "rare"
@@ -47,7 +51,7 @@ variant = maf > 0.05 ? "common" : "rare"
 ##------------------------------------------------------------------------------
 ## Simulating phenotypes:
 ##------------------------------------------------------------------------------
-Y = simulatePhenotypes(npheno, traitcor, causal_ind, nassoc, variant, MAF, n_unrelated, G)
+Y = simulatePhenotypes(npheno, traitcor, causal_ind, nassoc, variant, MAF, n_unrelated, G, effectSize)
 
 
 ##------------------------------------------------------------------------------

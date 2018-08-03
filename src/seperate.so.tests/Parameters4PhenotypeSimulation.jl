@@ -13,7 +13,7 @@ function parameters4phenotypeSimulation(npheno, traitcor, causal_ind, nassoc, va
         hvec_unr = fill(0.0, nassoc)
         for i in 1:nassoc
             if (variant=="rare")
-                betamat_unr[i,:] = (0.4 + rnorm(length(causal_ind), 0, 0.1))*abs(log10.(MAF_C_unr))
+                betamat_unr[i,:] = (0.4 + rnorm(length(causal_ind), 0, 0.1)) .* abs.(log10.(MAF_C_unr))
             elseif (variant=="common")
                 betamat_unr[i,:] = fill(effectSize, length(causal_ind))
             end

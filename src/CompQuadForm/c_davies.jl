@@ -344,7 +344,7 @@ function qfc(lb::Vector, nc::Vector, n::Vector, s::Int64, r::Int64, sigma::Float
     #truncation point with no convergence factor
     findu(utx, 0.5 * acc1, tausq, lb, nc, n, sigsq, r)
     
-    #Does convergence factor help
+    #Does convergence factor help?
     if c != 0.0 && almx > 0.07 * sd
         tausq = 0.25 * acc1 / cfe(c, lb, th, r, ndstart, n, nc, s)
         if fail == true
