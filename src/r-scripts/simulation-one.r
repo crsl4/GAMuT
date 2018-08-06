@@ -334,6 +334,11 @@ causal.ind = sample(1:n_variants,n_causal,replace=FALSE)
 
 ## determine the MAF of each variant in the sample
 MAF_unr = colMeans(UNR_OBS)/2
+beta_weight = dbeta(MAF,1,25)/dbeta(0,1,25) # assume beta-distribution weights
+## Note: one can use other weight functions by simply recoding beta_weight as desired
+
+G0 = as.matrix(UNR_OBS)%*%diag(beta_weight) # Weighted rare variants
+G  = as.matrix(scale(G0,center=T,scale=F)
 
 ## we set "variant" to use the same functions as with cosi
 if(maf > 0.05){

@@ -14,5 +14,3 @@ function simulatePhenotypes(npheno, traitcor, causal_ind, nassoc, variant, MAF_u
 end
 
 
-##What is G? currently is a 100 X 2
-##ERROR: BoundsError: attempt to access 100×2 Array{Float64,2} at index [1, 261]
