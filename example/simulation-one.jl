@@ -35,8 +35,6 @@ for i in 1:n_variants
     out = minorAlleleCountsBinomial(n_unrelated, maf)
     G[:,i]= out[2]
 end
-n_causal = floor(causal_var*n_variants)
-causal_ind = sample(collect(1:n_variants),Int(n_causal), replace=false)
 
 ## determine the MAF of each variant in the sample
 MAF = mapslices(mean, G, 1)/2
@@ -47,20 +45,22 @@ beta_weight = dbeta.(MAF, 1, 25)/dbeta.(0, 1, 25)
 G0 = G * diagm(vec(beta_weight))
 G = G0 .- mean(G0, 1)
 
-## we set "variant" to use the same functions as with cosi
-variant = maf > 0.05 ? "common" : "rare"
-
 ##------------------------------------------------------------------------------
 ## Simulating phenotypes:
 ##------------------------------------------------------------------------------
-Y = simulatePhenotypes(npheno, traitcor, causal_ind, nassoc, variant, MAF, n_unrelated, G, effectSize)
+n_causal = floor(causal_var*n_variants)
+causal_ind = sample(collect(1:n_variants),Int(n_causal), replace=false)
 
+## we set "variant" to use the same functions as with cosi
+variant = maf > 0.05 ? "common" : "rare"
+
+Y = simulatePhenotypes(npheno, traitcor, causal_ind, nassoc, variant, MAF, n_unrelated, G, effectSize)
 
 ##------------------------------------------------------------------------------
 ## GAMuT test
 ##------------------------------------------------------------------------------
-lc,ev_Lc = linear_GAMuT_geno(G) ##produces only 2 values rather than a large matrix when it works 
-lc_2,ev_Lc_2 = linear_GAMuT_geno(Y)
+lc,ev_Lc = linear_GAMuT_geno(Y)
+lc_2,ev_Lc_2 = linear_GAMuT_geno(G) ##produces only 2 values rather than a large matrix when it works 
 pval = testGAMuT(lc,ev_Lc,lc_2,ev_Lc_2)
 
 

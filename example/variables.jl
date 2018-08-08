@@ -4,8 +4,8 @@
 maf = 0.25
 traitcor = "med"
 nassoc = 1
-npheno = 1
-n_unrelated = 5000
-n_variants = 500
+npheno = 6
+n_unrelated = 1000
+n_variants = 353
 causal_var = 0.01
 effectSize = log(1.05)
