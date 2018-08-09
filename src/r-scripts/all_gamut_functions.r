@@ -21,17 +21,21 @@ linear_GAMuT_geno <- function(X){
 }
 
 TestGAMuT <- function(Yc, lambda_Y, Xc, lambda_X) {
-  
-  ## Test statistic
-  m = nrow(Yc) # Number of subjects in study
-  GAMuT = (1/m) * sum(sum(t(Yc) %*% Xc))  
-  
-  ## Derive p-value of GAMuT statistic
-  ## Form vector of eigenvalue products
-  Z = (as.matrix(lambda_Y)) %*% t(as.matrix(lambda_X))
-  Zsort <- sort(Z, decreasing=TRUE)
-  scoredavies = GAMuT*m^2
-  results_score <- davies(scoredavies, Zsort)
-  davies_pvalue <- (results_score$Qq)
-  return(davies_pvalue)
-}
+	
+    ## test statistic:
+    m = nrow(Yc) # number of subjects in study
+    GAMuT = (1/m) * sum(sum(t(Yc) * Xc))  
+
+
+    ## populate vector of all pairwise combination of eigenvalues
+    ## from the phenotype and genotype similarity matrices:
+    Z <- (as.matrix(lambda_Y)) %*% t(as.matrix(lambda_X))
+    Zsort <- sort(Z, decreasing=TRUE)
+
+    ## derive p-value of GAMuT statistic:
+    scoredavies = GAMuT*m^2
+    results_score <- davies(scoredavies, Zsort)
+    davies_pvalue <- (results_score$Qq)
+
+    return(davies_pvalue)
+} 

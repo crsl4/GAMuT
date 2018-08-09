@@ -40,7 +40,6 @@ end
 MAF = mapslices(mean, G, 1)/2
 
 ##for comparison with Mike's code
-using Rmath
 beta_weight = dbeta.(MAF, 1, 25)/dbeta.(0, 1, 25)
 G0 = G * diagm(vec(beta_weight))
 G = G0 .- mean(G0, 1)
@@ -55,21 +54,22 @@ causal_ind = sample(collect(1:n_variants),Int(n_causal), replace=false)
 variant = maf > 0.05 ? "common" : "rare"
 
 Y = simulatePhenotypes(npheno, traitcor, causal_ind, nassoc, variant, MAF, n_unrelated, G, effectSize)
-
+P0 = scale!(Y, 2)
+P = P0 .-mean(P0,1)
 ##------------------------------------------------------------------------------
 ## GAMuT test
 ##------------------------------------------------------------------------------
-lc,ev_Lc = linear_GAMuT_geno(Y)
+lc,ev_Lc = linear_GAMuT_geno(P)
 lc_2,ev_Lc_2 = linear_GAMuT_geno(G) ##produces only 2 values rather than a large matrix when it works 
 pval = testGAMuT(lc,ev_Lc,lc_2,ev_Lc_2)
 
 
 @rput G
-@rput Y
+@rput P
 R"""
 source("./src/r-scripts/all_gamut_functions.r")
-x1 = linear_GAMuT_geno(G)
-x2 = linear_GAMuT_geno(Y)
+x1 = linear_GAMuT_geno(P)
+x2 = linear_GAMuT_geno(G)
 pvalR = TestGAMuT(x1$Lc,x1$ev_Lc,x2$Lc,x2$ev_Lc)
 """
 @rget pvalR

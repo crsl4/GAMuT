@@ -1,7 +1,4 @@
 #define UseDouble 0             /* all floating point double */
-#include "R_ext/libextern.h"
-#include "Rconfig.h"
-#include "R_ext/Arith.h"
 #include "R.h"
 #include "Rmath.h"
 #include "setjmp.h"
