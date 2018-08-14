@@ -1,4 +1,4 @@
-include("gamut_simulation/simulation-one.jl")
+include("simulation_one_files/simulation-one.jl")
 for i in 1:1000
-    run(`julia gamut_simulation/simulation-one.jl $i`)
+    run(`julia simulation_one_files/simulation-one.jl $i`)
 end 

@@ -11,7 +11,7 @@
 
 ## Replicate to run in case we want to run multiple replicates
 ## with the same setting:
-irep = 1
+irep = 0
 if(!isempty(ARGS))
     irep = ARGS[1]
 end
@@ -23,8 +23,7 @@ include("functions.jl")
 ## Variables:
 ##------------------------------------------------------------------------------
 include("variables.jl")
-using Dates
-seed = 3*irep * Dates.hour(now())*Dates.minute(now())*Dates.millisecond(now())
+seed = 3*parse(Int64,irep) * Dates.hour(now())*Dates.minute(now())*Dates.millisecond(now())
 srand(seed);
 
 ##------------------------------------------------------------------------------

@@ -211,7 +211,7 @@ function order(lb::Vector, th::Vector, r::Int64, j::Int64)
     for j in 1:r 
         lj = abs(lb[j])
         for k in j:1  
-            if lj > abs(lb[th[k]]) 
+            if lj > abs(lb[convert(Int64, round(th[k]))]) 
                 th[k + 1] = th[k]
             else
                 th[k + 1] = j
