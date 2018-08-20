@@ -44,20 +44,18 @@ function simulatePhenotypesMediation(npheno1, npheno2,traitcor, nassoc1, nassoc2
             pc = pcasvd(P)
             prop = pc[:sdev[1]]/sum(pc[:sdev])
             print(["Proportion of variance explained by PC1: " prop])
-            Z = [pc[:x[1:size(x,1), 1:numpcs]]]
+            Z = [pc[:x[1:size(:x,1), 1:numpcs]]]
             ## -------------------------------------------
             Y2 = [convert(Int64, (size(P2, 1)*size(P2, 2))), size(P2, 2)]
             for i in 1:size(P2, 2)
                 #GLM
                 f = lm(P1[1, i]~Z)
-                #NLsolve
-                Y2[:i] = f!(f)
+                Y2[:i] = StatsBase.residuals(f)
             end
             Y1 = [convert(Int64, (size(P1, 1)*size(P1, 2))), size(P1, 2)]
             for i in 1:size(P1, 2)
                 f = lm(P1[1, i]~Z)
-                #NLsolve
-                Y1[:i] = f!(f)
+                Y1[:i] = StatsBase.residuals(f)
             end
         end
     end

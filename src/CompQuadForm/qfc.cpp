@@ -3,6 +3,14 @@
 #include "Rmath.h"
 #include "setjmp.h"
 
+void foo(){}  //definition
+
+int main()
+{
+    foo();
+    return 0;
+}
+
 using std::atan;
 using std::exp;
 using std::sin;
