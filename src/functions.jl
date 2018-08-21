@@ -2,7 +2,6 @@
 using Distributions
 using MultivariateStats
 using GLM
-using NamedArrays
 using DataFrames
 using RCall
 using Rmath
