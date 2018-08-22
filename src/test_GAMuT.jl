@@ -3,7 +3,7 @@ R"library(CompQuadForm)"
 function testGAMuT(yc, λy, xc, λx )
     #Test statistic
     m = size(yc, 1)
-    gamut = (1/m)*sum(yc' .* xc)
+    gamut = (1/m)*sum(yc' .* xc) #Broadcast necessary for significant p-value
     
     #Derive p-value of GAMuT statistic
     #Form vector of eigenvalue products

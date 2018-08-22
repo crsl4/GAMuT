@@ -21,6 +21,6 @@ function splitPhenotypeMatrix(P,nassoc1,nassoc2, npheno1,npheno2)
         Y1 = P[:, vcat(1:nassoc1,(nassoc1+nassoc2+1):(nassoc1+nassoc2+(npheno1-nassoc1)))]
         Y2 = P[:, vcat((nassoc1+1):(nassoc1+nassoc2),(nassoc1+nassoc2+npheno1-nassoc1+1):m)]
     end
-    return([Y1=Y1,Y2=Y2])
+    return([Y1,Y2])
 end
 

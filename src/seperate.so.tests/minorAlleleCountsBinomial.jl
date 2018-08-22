@@ -1,18 +1,18 @@
 function minorAlleleCountsBinomial(numtrios, maf)
     mom1bin = Binomial(1, maf)
     mom1 = rand(mom1bin, numtrios)
-    mom1[mom1 .== 0] = 2
+    mom1[mom1 .== 0] .= 2
     mom2bin = Binomial(1, maf)
     mom2 = rand(mom2bin, numtrios)
-    mom2[mom2 .== 0] = 2
+    mom2[mom2 .== 0] .= 2
 
     dad1bin = Binomial(1, maf)
     dad1 = rand(dad1bin, numtrios)
-    dad1[dad1 .== 0] = 2
+    dad1[dad1 .== 0] .= 2
 
     dad2bin = Binomial(1, maf)
     dad2 = rand(dad2bin, numtrios)
-    dad2[dad2 .== 0] = 2
+    dad2[dad2 .== 0] .= 2
 
     eur = collect(hcat(mom1,mom2,dad1,dad2))
 

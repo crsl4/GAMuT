@@ -1,7 +1,10 @@
 ## Dependencies:
 using Distributions
-using MultivariateStats
-using GLM
+
+##MultivariateStats and GLM are deprecated and only used with simulatePhenotypesMediation
+#using MultivariateStats
+#using GLM
+
 using DataFrames
 using RCall
 using Rmath

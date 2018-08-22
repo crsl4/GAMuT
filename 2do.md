@@ -12,9 +12,7 @@ where there’s a line to ask travis to install ggplot2. This line is commented 
 
 At the end of Anna's project:
 
-1) The c_davies.jl file runs an infinite loop when I run it. No errors are produced, and I know exactly where the problem is, but I want to get your opinion on how to go about changing the code so that it is still relatively similar to the C++ code. 
+1) The c_davies.jl file runs an infinite loop when I run it. Comments are added to the top of c_davies.jl. Running l1 with @show still produces an infinite loop. This indicates that the problem occurs before the if statement in l1. I notices that there is never a call to "goto" l1 so this might be the osurce of our problem. 
  
-2) The simulationPhenotypesMediation.jl in the seperate.so.tests folder may need to be reviewed. I had made a note earlier that there may be a R function which is not present in Julia. I will look into this more this afternoon. 
- 
-3) I am currently running simulation-one, so let’s hope that I do not get any errors. I ran it on Friday, but Julia functions were not installed correctly so I had to rerun it a few times.
- 
+
+ 2) Run Simulation-one in HGCC. (You may have to go into GitHub to get the Julia 0.6 version of simulation-one.jl)

@@ -1,4 +1,5 @@
-
+## Does not work in 0.6 or 0.7 (ellipsis) 
+## This is not used in simulation and may be for a specific case scenario. 
 
 function blockMatrixDiagonal(...)
     matrixList = [...]

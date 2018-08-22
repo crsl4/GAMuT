@@ -1,4 +1,5 @@
-
+## Works correctly in 0.6 but have not yet checking in 0.7
+## This is not used in simulation and may be for a specific case scenario. 
 
 ## input only one matrix (and size of block) that will have the block diagonal
 ## replaced by identities

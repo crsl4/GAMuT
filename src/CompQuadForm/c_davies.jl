@@ -1,3 +1,6 @@
+##Produces infinite loop. 
+##There is no call to l1, but l1 is necessary for the other loops. We may want to remove the label and simply place the contents in a for loop. 
+
 function log1(x::Float64, first::Bool) 
     if abs(x) > 0.1
         if first == true
@@ -284,7 +287,7 @@ end
     #trace[4]         truncation point in initial integration
     #trace[5]         s.d. of initial convergence factor
     #trace[6]         cycles to locate integration parameters
-function qfc(lb::Vector, nc::Vector, n::Vector, s::Int64, r::Int64, sigma::Float64, c::Float64, lim::Int64, acc::Float64, ifault::Int64, res::Float64, tausq::Float64, th::Vector, ndstart::Bool) 
+function qfc(lb::Vector, nc::Vector, n::Vector, r::Int64, sigma::Float64, c::Float64, lim::Int64, acc::Float64, trace::Vector, ifault::Int64, res::Float64, s::Int64, tausq::Float64, th::Vector, ndstart::Bool) 
     lim = lim[1]
     c = c[1]
     xconst = Number[]
@@ -381,6 +384,8 @@ function qfc(lb::Vector, nc::Vector, n::Vector, s::Int64, r::Int64, sigma::Float
         xnt = utx / intv
         xntm = 3.0 / sqrt(acc1)
         if xnt > xntm * 1.5
+            @show xnt
+            @show xntm
             
             #Parameters for auxillary integrations
             if xntm > xlim 
@@ -446,4 +451,4 @@ function qfc(lb::Vector, nc::Vector, n::Vector, s::Int64, r::Int64, sigma::Float
         res = qfval
         return
 end
-#qfc([1, 2, 3], [1, 2, 3], [1, 2, 3], 3, 3, 10.0, 9.0, 8, 7.0, 5, 4.0, 3.0, [1, 2, 3], false)
+#qfc([1, 2, 3], [1, 2, 3], [1, 2, 3], 3, 10.0, 9.0, 8, 7.0, fill(1, 8), 5, 4.0, 3, 3.0, [1, 2, 3], false)

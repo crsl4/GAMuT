@@ -34,7 +34,8 @@ function createCovMatrix(npheno, traitcor)
             mat = zeros(npheno, npheno)
             #Lhttps://stackoverflow.com/questions/51068263/lower-triangular-matrix-equal-to-value-in-julia
             mat[tril!(trues(size(mat)), -1)] = cor
-            mat = mat + mat' + eye(npheno)
+            #https://github.com/JuliaLang/julia/issues/23156
+            mat = mat + mat' + Array(Diagonal(ones(npheno)))
         end
     end
     return(mat)

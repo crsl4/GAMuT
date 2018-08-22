@@ -11,7 +11,7 @@
 
 ## Replicate to run in case we want to run multiple replicates
 ## with the same setting:
-irep = 0
+irep = 1
 if(!isempty(ARGS))
     irep = ARGS[1]
 end
@@ -23,8 +23,10 @@ include("functions.jl")
 ## Variables:
 ##------------------------------------------------------------------------------
 include("variables.jl")
-seed = 3*parse(Int64,irep) * Dates.hour(now())*Dates.minute(now())*Dates.millisecond(now())
-srand(seed);
+using Dates
+using Random
+seed = 3*parse(Int64, irep)*hour(now())*minute(now())*millisecond(now())
+Random.seed!(seed);
 
 ##------------------------------------------------------------------------------
 ## Simulating genotypes:
@@ -35,13 +37,14 @@ for i in 1:n_variants
     G[:,i]= out[2]
 end
 
+#Not compatible with 0.7
 ## determine the MAF of each variant in the sample
-MAF = mapslices(mean, G, 1)/2
+#MAF = mapslices(mean, G, dims=1)/2
 
 ##for comparison with Mike's code
-beta_weight = dbeta.(MAF, 1, 25)/dbeta.(0, 1, 25)
-G0 = G * diagm(vec(beta_weight))
-G = G0 .- mean(G0, 1)
+#beta_weight = dbeta.(MAF, 1, 25)/dbeta.(0, 1, 25)
+#G0 = G * diagm(vec(beta_weight))
+#G = G0 .- mean(G0, 1)
 
 ##------------------------------------------------------------------------------
 ## Simulating phenotypes:
@@ -53,21 +56,23 @@ causal_ind = sample(collect(1:n_variants),Int(n_causal), replace=false)
 variant = maf > 0.05 ? "common" : "rare"
 
 Y = simulatePhenotypes(npheno, traitcor, causal_ind, nassoc, variant, MAF, n_unrelated, G, effectSize)
-P0 = scale!(Y, 2)
-P = P0 .-mean(P0,1)
+
+# Not compatible with 0.7
+#P0 = scale!(Y, 2)
+#P = P0 .-mean(P0,1)
 ##------------------------------------------------------------------------------
 ## GAMuT test
 ##------------------------------------------------------------------------------
-lc,ev_Lc = linear_GAMuT_geno(P)
+lc,ev_Lc = linear_GAMuT_geno(Y)
 lc_2,ev_Lc_2 = linear_GAMuT_geno(G) ##produces only 2 values rather than a large matrix when it works 
 pval = testGAMuT(lc,ev_Lc,lc_2,ev_Lc_2)
 
 
 @rput G
-@rput P
+@rput Y
 R"""
 source("./src/r-scripts/all_gamut_functions.r")
-x1 = linear_GAMuT_geno(P)
+x1 = linear_GAMuT_geno(Y)
 x2 = linear_GAMuT_geno(G)
 pvalR = TestGAMuT(x1$Lc,x1$ev_Lc,x2$Lc,x2$ev_Lc)
 """
@@ -80,5 +85,12 @@ df = DataFrame(i=irep, seed=seed, maf=maf, traitcor=traitcor, nassoc=nassoc, nph
 
 colnames = irep == 1 ? true : false
 
-using CSV
-CSV.write(outname, df, header=colnames);
+#Not compatible with 0.7
+#using CSV
+#CSV.write(outname, df, header=colnames);
+
+g = open("file.txt","w")
+for i in 1:nrows
+    write(g,string(df,"\n"))
+end
+close(g)

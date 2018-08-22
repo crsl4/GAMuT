@@ -18,7 +18,7 @@ function parameters4phenotypeSimulation(npheno, traitcor, causal_ind, nassoc, va
                 betamat_unr[i,:] = fill(effectSize, length(causal_ind))
             end
             tmp = betamat_unr[i,:].^2
-            tmp2 = 2*MAF_C_unr.*(1-MAF_C_unr)
+            tmp2 = 2*MAF_C_unr.*(1 .- MAF_C_unr)
             hvec_unr[i] = sum(tmp .* tmp2)
         end
 

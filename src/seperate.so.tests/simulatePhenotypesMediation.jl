@@ -1,3 +1,10 @@
+## This function is not used in our simulation. We simply use simulatePhenotypes.
+## In the PCA part of this function, the scale and pcasvd functions are deprecated. pcasvd is part of the MutlivariateStats package which is deprecated.
+## The lm function is also deprecated due to the deprecation of the GLM package. 
+## This function has not been fully tested due to the deprecation of the above functions, and it does not fully run. 
+
+using GLM
+using MultivariateStats 
 function simulatePhenotypesMediation(npheno1, npheno2,traitcor, nassoc1, nassoc2, causal_ind, MAF_unr, n_unrelated, variant,UNR_OBS, effectSize, approach, numpcs, ignoreZ) ##approach and numpcs = 1, ignoreZ = false
     if approach == 1
             P0_UNR = simulatePhenotypes(npheno1+npheno2, traitcor, causal_ind, nassoc1+nassoc2, variant, MAF_unr, n_unrelated, UNR_OBS, effectSize)
@@ -59,5 +66,5 @@ function simulatePhenotypesMediation(npheno1, npheno2,traitcor, nassoc1, nassoc2
             end
         end
     end
-    return([Y1=Y1, Y2=Y2])
+    return([Y1, Y2])
 end
