@@ -142,7 +142,7 @@ end
 #truncation(10.0/4.0, 0.0, [1, 2, 3], [1, 2, 3], [1, 2, 3], 7.0, 3)
 
 #find u such that truncation(u) < accx and truncation(u / 1.2) > accx
-function findu(ut::Float64, accx::Float64, tausq::Float64, lb::Vector, nc::Vector, n::Vector, sigsq::Float64, r::Int64) 
+function findu(ut::Float64, accx::Float64, lb::Vector, nc::Vector, n::Vector, sigsq::Float64, r::Int64) 
     divis = [2.0, 1.4, 1.2, 1.1]
     u = ut / 4
     if truncation(u, 0.0, lb, nc, n, sigsq, r) > accx
@@ -207,7 +207,7 @@ end
 #integrate(10, 9.0, 8.0, false, 7.0, 6.0, [1, 2, 3], [1, 2, 3], [1, 2, 3], 3)
 
 #find order of absolute values of lb
-function order(lb::Vector, th::Vector, r::Int64, j::Int64)
+function order(lb::Vector, th::Vector, r::Int64)
     if size(lb, 1) != r
         error("size of lb does not equal r")
     end
@@ -222,16 +222,16 @@ function order(lb::Vector, th::Vector, r::Int64, j::Int64)
         k = -1
         end
     end
-    ndstart = false
+    ndtsrt = false
 end
-#order([1, 2, 3], [1, 2, 3], 3, 3)
+#order([1, 2, 3], [1, 2, 3], 3)
 
 #coef of tausq in error when convergence factor of
 #exp1(-0.5 * tausq * u ^ 2) is used when df is evaluated at x
-function cfe(x::Float64, lb::Vector, th::Vector, r::Int64, ndstart::Bool, n::Vector, nc::Vector, j::Int64) 
+function cfe(x::Float64, lb::Vector, th::Vector, r::Int64, ndtsrt::Bool, n::Vector, nc::Vector) 
     #may need error for not equal here
-    if ndstart == true
-        order(lb, th, r, j) 
+    if ndtsrt == true
+        order(lb, th, r) 
     end
     axl = abs(x) 
     sxl = (x > 0.0) ? 1.0 : -1.0 
@@ -260,7 +260,7 @@ function cfe(x::Float64, lb::Vector, th::Vector, r::Int64, ndstart::Bool, n::Vec
             return(2.0^((sum1 / 4.0) / (pi * axl^2)))
         end
 end
-#cfe(10.0, [1, 2, 3], [1, 2, 3], 3, false, [1, 2, 3], [1, 2, 3], 3)
+#cfe(10.0, [1, 2, 3], [1, 2, 3], 3, false, [1, 2, 3], [1, 2, 3])
 
 #distribution function of a linear combination of non-central chi-squared random variables :
  #input:
@@ -287,7 +287,7 @@ end
     #trace[4]         truncation point in initial integration
     #trace[5]         s.d. of initial convergence factor
     #trace[6]         cycles to locate integration parameters
-function qfc(lb::Vector, nc::Vector, n::Vector, r::Int64, sigma::Float64, c::Float64, lim::Int64, acc::Float64, trace::Vector, ifault::Int64, res::Float64, s::Int64, tausq::Float64, th::Vector, ndstart::Bool) 
+function qfc(lb::Vector, nc::Vector, n::Vector, r::Int64, sigma::Float64, c::Float64, lim::Int64, acc::Float64, trace::Vector, ifault::Int64, res::Float64) 
     lim = lim[1]
     c = c[1]
     xconst = Number[]
@@ -304,6 +304,16 @@ function qfc(lb::Vector, nc::Vector, n::Vector, r::Int64, sigma::Float64, c::Flo
     ndtsrt = true
     fail = false
     xlim = lim
+
+    ##I have no idea how to handle this
+    ##The c code looks like this: 
+    ##th = (int*)malloc(r*(sizeof(int)));
+    ##if (! th) { *ifault = 5;  goto  endofproc
+    th = malloc(r*(sizeof(int)))
+      if (! th)  
+        ifault = 5
+        @goto endofproc
+      end
     
     # find mean, sd, max and min of lb,
     #check that parameter values are valid 
@@ -345,16 +355,16 @@ function qfc(lb::Vector, nc::Vector, n::Vector, r::Int64, sigma::Float64, c::Flo
     un = -up
     
     #truncation point with no convergence factor
-    findu(utx, 0.5 * acc1, tausq, lb, nc, n, sigsq, r)
+    findu(utx, 0.5 * acc1, lb, nc, n, sigsq, r)
     
     #Does convergence factor help?
     if c != 0.0 && almx > 0.07 * sd
-        tausq = 0.25 * acc1 / cfe(c, lb, th, r, ndstart, n, nc, s)
+        tausq = 0.25 * acc1 / cfe(c, lb, th, r, ndtsrt, n, nc)
         if fail == true
             fail = false
         elseif truncation(utx, tausq, lb, nc, n, sigsq, r) < 0.2 * acc1
             sigsq = sigsq + tausq
-            findu(utx, 0.25 * acc1, tausq, lb, nc, n, sigsq, r)
+            findu(utx, 0.25 * acc1, lb, nc, n, sigsq, r)
             trace[6] = sqrt(tausq) 
         end
     end
@@ -400,7 +410,7 @@ function qfc(lb::Vector, nc::Vector, n::Vector, r::Int64, sigma::Float64, c::Flo
             end
             
             #Calculate Convergence Factor
-            tausq = 0.33 * acc1 / (1.1 * (cfe(c-x, lb, th, r, ndstart, n, nc) + cfe(c+x, lb, th, r, ndstart, n, nc)))
+            tausq = 0.33 * acc1 / (1.1 * (cfe(c-x, lb, th, r, ndtsrt, n, nc) + cfe(c+x, lb, th, r, ndtsrt, n, nc)))
             if fail
                 @goto l2
 
@@ -416,7 +426,7 @@ function qfc(lb::Vector, nc::Vector, n::Vector, r::Int64, sigma::Float64, c::Flo
             trace[2] = trace[2] + ntm + 1
             
             #find truncation point with new convergence factor
-            findu(utx, 0.25 * acc1, tausq, lb, nc, n, sigsq, r)
+            findu(utx, 0.25 * acc1, lb, nc, n, sigsq, r)
             acc1 = 0.75 * acc1
             @goto l1
         end
@@ -451,4 +461,4 @@ function qfc(lb::Vector, nc::Vector, n::Vector, r::Int64, sigma::Float64, c::Flo
         res = qfval
         return
 end
-#qfc([1, 2, 3], [1, 2, 3], [1, 2, 3], 3, 10.0, 9.0, 8, 7.0, fill(1, 8), 5, 4.0, 3, 3.0, [1, 2, 3], false)
+#qfc([1, 2, 3], [1, 2, 3], [1, 2, 3], 3, 10.0, 9.0, 8, 7.0, fill(1, 8), 5, 4.0, 3)
