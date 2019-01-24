@@ -1,3 +1,7 @@
+- use real-life data (bed files for genotypes and csv for phenotypes), and write a short script to read these files into G and Y, and then run GAMuT in julia and R as in simulation-one.jl
+- later: debug davies.jl to avoid dependency on RCall
+
+
 - test data_compare_R as it is: test for different seeds and variable inputs
 - example: simulation-one.jl, do ~1000 simulations per setting. Two settings: nassoc=1 and nassoc=0 (for npheno=2)
 - do data_compare_R a true test function, add travis stuff:
